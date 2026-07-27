@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MalAvi — a database of avian haemosporidian lineages</title>
+<meta name="description" content="MalAvi is a database of avian malaria parasites and related
+  haemosporidians (Plasmodium, Haemoproteus, Leucocytozoon), organized around lineages of the
+  mitochondrial cytochrome b gene.">
+<link rel="icon" href="assets/img/favicon.ico">
+<link rel="stylesheet" href="assets/css/malavi.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand" id="brandHome">
+      <img src="data:image/png;base64,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" alt="">
+      <div>
+        <div class="wordmark display">Mal<span class="lo">Avi</span></div>
+        <div class="brand-sub">Avian haemosporidian database</div>
+      </div>
+    </div>
+    <nav class="primary" id="nav">
+      <button data-view="home" aria-current="page">Home</button>
+      <button data-view="tables">Tables</button>
+      <button data-view="submit">Submit data</button>
+      <button data-view="toolkit">Toolkit</button>
+      <button data-view="queue">Queue</button>
+      <button data-view="about">About</button>
+    </nav>
+    <button class="theme-toggle" id="themeBtn" type="button">Dark</button>
+  </div>
+</header>
+
+<main>
+  <!-- ================================ HOME ================================ -->
+  <section class="view active" id="view-home">
+    <div class="stack">
+
+      <div>
+        <span class="chip release"><span class="dot"></span><span class="lbl">Release</span><b data-stat="release"></b></span>
+        <h1 class="page display" style="margin-top:20px">A database of avian<br>haemosporidian lineages</h1>
+        <p class="lead"><em class="sci">Plasmodium</em>, <em class="sci">Haemoproteus</em> and
+          <em class="sci">Leucocytozoon</em>, organized around lineages of the mitochondrial
+          cytochrome <em>b</em> gene. Every table and the alignment come from the same versioned
+          release.</p>
+        <div class="btn-row" style="margin-top:18px">
+          <button class="btn big" data-goto="tables">Browse and download the tables</button>
+          <button class="btn big ghost" data-goto="submit">Submit your data</button>
+        </div>
+      </div>
+
+      <div>
+        <p class="eyebrow">The release in numbers</p>
+        <div class="stats" id="statStrip"></div>
+      </div>
+
+      <div>
+        <p class="eyebrow">Lineages by parasite genus</p>
+        <div class="donuts" id="donuts"></div>
+        <p style="margin-top:10px;font-size:12.5px;color:var(--ink-3)">
+          <span data-stat="unassigned"></span> lineages have no host record carrying a genus assignment and are not counted above.
+        </p>
+      </div>
+
+      <div>
+        <p class="eyebrow">How widely each genus has been sampled</p>
+        <p>Host taxa are counted per parasite genus. A host species can carry more than one
+          genus, so these do not sum to the totals above — they show reach, not shares.</p>
+        <div class="legend" id="rankLegend" style="margin:0 0 16px"></div>
+        <div class="ranks" id="ranks"></div>
+      </div>
+
+      <div>
+        <p class="eyebrow">Where the records come from</p>
+        <p>Number of published studies per country, by parasite genus. Hover a country for
+          its count.</p>
+        <div class="breakout"><div class="maps" id="maps"></div></div>
+        <p style="margin-top:12px;font-size:12.5px;color:var(--ink-3)">
+          <span data-stat="mapped"></span> of the <span data-stat="countries"></span> countries in the database are shown. <span data-stat="unplaced"></span> small island territories cannot be resolved at this map scale but are present in the tables.
+        </p>
+      </div>
+
+      <div>
+        <p class="eyebrow">Host records by parasite genus</p>
+        <div class="genus-bar" id="genusBar" role="img"></div>
+        <div class="legend" id="genusLegend"></div>
+      </div>
+
+      <div>
+        <p class="eyebrow">Data reports · release <span data-stat="release"></span></p>
+        <p>Each report is generated from a single release and stays fixed to it, so a report
+          you cite remains available.</p>
+        <div class="files" style="margin-top:12px">
+          <a href="#"><span class="nm">Synonymy report</span><span class="ds">Lineage names that resolve to the same sequence.</span><span class="fm" data-stat="release"></span></a>
+          <a href="#"><span class="nm">Ambiguous pairs</span><span class="ds">Lineage pairs separated by ambiguous positions alone.</span><span class="fm" data-stat="release"></span></a>
+          <a href="#"><span class="nm">Lineage QC</span><span class="ds">Sequence checks across the whole release — length, frame, duplicates.</span><span class="fm" data-stat="release"></span></a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Errors in the database?</h3>
+        <div class="btn-row" style="margin-top:14px">
+          <a class="btn" href="mailto:vaellis@udel.edu,staffan.bensch@biol.lu.se?subject=MalAvi">Email the curators</a>
+          <span style="font-size:13px;color:var(--ink-3)" class="mono">vaellis@udel.edu · staffan.bensch@biol.lu.se</span>
+        </div>
+        <h3 style="margin-top:26px">Would you like to help curate?</h3>
+        <p>We welcome <strong>assistant curators</strong> to help review data submissions. The
+          work is much like refereeing a paper: checking that records match what the study
+          reports.</p>
+        <p>As more curators join, submissions will be assigned out for review through a shared
+          editorial address rather than going to a single curator. Assistant curators are listed
+          on the <a href="#" data-goto="about">editorial board</a>, so the role is a citable
+          appointment. Write to us if you are interested.</p>
+        <div class="btn-row" style="margin-top:14px">
+          <a class="btn ghost" href="mailto:vaellis@udel.edu,staffan.bensch@biol.lu.se?subject=MalAvi%20—%20interested%20in%20helping%20curate">Offer to help</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =============================== TABLES =============================== -->
+  <section class="view" id="view-tables">
+    <div class="stack">
+      <div id="tablesIndex">
+        <h2 class="section-title display">Tables</h2>
+        <p class="lead">Open a table to search it here, or download it whole. Everything comes
+          from release <span data-stat="release"></span>.</p>
+        <div class="tindex" id="tindex" style="margin-top:20px"></div>
+        <div class="files" style="margin-top:18px">
+          <a href="#"><span class="nm">Alignment</span><span class="ds"><span data-stat="alnlen"></span> bp cytochrome <em>b</em>, all lineages, aligned.</span><span class="fm">FASTA</span></a>
+          <a href="#"><span class="nm">Everything</span><span class="ds">All tables plus the alignment, as one archive.</span><span class="fm">ZIP</span></a>
+        </div>
+      </div>
+
+      <div id="tableView" style="display:none">
+        <button class="mini" id="backToIndex" style="margin-bottom:16px">← All tables</button>
+        <h2 class="section-title display" id="tvTitle"></h2>
+        <p id="tvDesc"></p>
+
+        <div class="tbar">
+          <label style="font-size:13px;color:var(--ink-3)">Show
+            <select id="pageSize">
+              <option>25</option><option>50</option><option>100</option>
+            </select> rows</label>
+          <button class="mini" id="clearFilters">Clear filters</button>
+          <a class="mini" href="#" id="dlCsv">Download CSV</a>
+          <a class="mini" href="#" id="dlXlsx">Download Excel</a>
+          <div class="pager" id="pagerTop"></div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead id="tvHead"></thead>
+            <tbody id="tvBody"></tbody>
+          </table>
+        </div>
+
+        <div class="tbar" style="margin-top:12px">
+          <span class="rowcount" id="tvCount"></span>
+          <div class="pager" id="pagerBottom"></div>
+        </div>
+        <p style="margin-top:12px;font-size:12.5px;color:var(--ink-3)" id="tvNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== SUBMIT =============================== -->
+  <section class="view" id="view-submit">
+    <div class="stack">
+
+      <div>
+        <h1 class="page display">Submit your data</h1>
+        <p class="lead">MalAvi is built from data contributed by researchers. There are two
+          things to send, and they can be sent months apart.</p>
+        <div class="btn-row" style="margin-top:20px">
+          <button class="btn big">Open the submission form</button>
+          <a class="btn big ghost" href="#" data-goto-el="checker">Check a sequence first</a>
+        </div>
+        <p style="margin-top:14px;font-size:13.5px;color:var(--ink-3)">
+          Prefer email? Send it to
+          <a class="mono" href="mailto:vaellis@udel.edu,staffan.bensch@biol.lu.se?subject=MalAvi%20submission">vaellis@udel.edu and staffan.bensch@biol.lu.se</a>.
+        </p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="num display">1</div>
+          <h3>Before you publish</h3>
+          <p>Send your new lineage names and their sequences. We check them, usually within a
+            week, so the same names end up in your paper, in GenBank and in MalAvi.</p>
+        </div>
+        <div class="step">
+          <div class="num display">2</div>
+          <h3>When it is accepted</h3>
+          <p>Send the records — which lineage, in which host, where, and how many were tested.
+            Plus the paper and its supplementary files if you can.</p>
+        </div>
+        <div class="step">
+          <div class="num display">3</div>
+          <h3>We take it from there</h3>
+          <p>A curator checks everything and comes back to you with any questions. Your data
+            appear in the next release.</p>
+        </div>
+      </div>
+
+      <div>
+        <h3>What to send</h3>
+        <div class="files" style="margin-top:12px">
+          <a href="#"><span class="nm">Submission template</span><span class="ds">One workbook covers both stages. Fill the green columns.</span><span class="fm">XLSX</span></a>
+          <a href="#"><span class="nm">Worked example</span><span class="ds">A real filled submission — Gupta et al. 2019, 47 lineages, 28 hosts, 13 sites.</span><span class="fm">XLSX</span></a>
+        </div>
+        <div class="btn-row" style="margin-top:16px">
+          <button class="btn">Upload the paper (PDF)</button>
+          <button class="btn">Upload supplementary files</button>
+        </div>
+        <p style="margin-top:12px;font-size:13.5px">
+          Both are encouraged, neither is required. The supplementary tables usually hold the
+          host × lineage × site matrix, so they help most. Files are used only to check the
+          records against the paper, are shared with the curators alone, and are never posted.
+        </p>
+      </div>
+
+      <div class="pull">
+        <p><strong>Nothing you send is added automatically.</strong> A curator reviews every
+          submission, and will come back to you before anything goes in.</p>
+      </div>
+
+      <div>
+        <h3>The detail, if you want it</h3>
+        <details class="more">
+          <summary>Stage 1 — naming new lineages</summary>
+          <div class="body">
+            <p>A new lineage is a sequence that differs at one or more positions from the most
+              similar sequence already in MalAvi.</p>
+            <ul>
+              <li>Names are a <strong>5–6 letter acronym from the scientific name of the first
+                host it was found in, plus a two-digit number</strong> —
+                <span class="mono">Alcippe poioicephala → ALCPOI02</span>. The name must be unique.</li>
+              <li>Fill the <strong>NewLineages</strong> sheet, one representative host species per lineage.</li>
+              <li>Fill the <strong>Reference</strong> sheet — a preliminary title is enough.</li>
+              <li>Give the sequences, on the <strong>Sequences</strong> sheet or as a FASTA file
+                whose names match your proposed names.</li>
+              <li>Send us the accession numbers once you have deposited in GenBank.</li>
+            </ul>
+            <p style="font-size:14px">Please send the sequences themselves whether or not they
+              are in GenBank — accession numbers alone are not enough.</p>
+          </div>
+        </details>
+        <details class="more">
+          <summary>Stage 2 — the records</summary>
+          <div class="body">
+            <ul>
+              <li><strong>Hosts_and_Sites</strong> — one row per lineage / host species / site
+                combination.</li>
+              <li><strong>Sites</strong> — latitude and longitude as degrees and decimal minutes,
+                e.g. <span class="mono">11°28.20000', 076°07.80000'</span>. Decimal degrees are
+                fine too; we convert and show you what we read.</li>
+              <li><strong>Alt_Lineage_names</strong> — if your paper calls an existing MalAvi
+                lineage by a different name. Please fill this in; it avoids substantial work
+                reconciling names during curation.</li>
+              <li><strong>Vectors</strong> — if you screened arthropods.</li>
+            </ul>
+          </div>
+        </details>
+        <details class="more">
+          <summary>Filling in the workbook</summary>
+          <div class="body">
+            <dl class="fields">
+              <dt>Green columns</dt><dd>Yours to fill.</dd>
+              <dt>Amber columns</dt><dd>Optional but helpful.</dd>
+              <dt>Red columns</dt><dd>Not required. These were database index numbers and are now
+                filled in by the curator. The exception is <span class="mono">HOST_SPECIES_ID</span>,
+                which you may take from the NCBI taxonomy browser.</dd>
+              <dt>Reference key</dt><dd>Use the same string on every sheet.
+                <span class="mono">Gupta et al 2019</span> on one sheet and
+                <span class="mono">Gupta et al 2020</span> on another is a common error, and the
+                checks will flag it.</dd>
+              <dt>Prevalence</dt><dd>Number found and number tested, where your study reports
+                them. Found must not exceed tested.</dd>
+              <dt>Minimum length</dt><dd>470 bp of unambiguous sequence within the 479 bp window.</dd>
+            </dl>
+          </div>
+        </details>
+        <details class="more">
+          <summary>If you only have a paper</summary>
+          <div class="body">
+            <p>Send the PDF and its supplementary tables and tell us what they contain — host–parasite
+              associations, localities, prevalence, vector records — and we will do the extraction.</p>
+            <p>Older papers are also welcome. If you have published work that never made it into
+              MalAvi, please send it.</p>
+          </div>
+        </details>
+      </div>
+
+      <div id="checker">
+        <h2 class="section-title display">Check a sequence</h2>
+        <p>One sequence at a time. Paste it plain or with a FASTA header — either works. This
+          tells you whether it is already in MalAvi, which genus it looks like, and whether it
+          is long enough to be named as new.</p>
+        <div class="card" style="margin-top:16px">
+          <div class="lookup-box">
+            <label class="eyebrow" for="seq-check">Your sequence</label>
+            <textarea id="seq-check" spellcheck="false"
+              placeholder="GCAACTGGTGCTTCATTTGTATTTATTTTAACTTATTTACATATTTTAAGAGGATTAAAT..."></textarea>
+            <div class="btn-row">
+              <button class="btn" type="button" data-check="seq-check" data-out="res-check">Run the checks</button>
+              <button class="btn ghost" type="button" data-demo="seq-check">Use an example</button>
+              <span style="font-size:12.5px;color:var(--ink-3)">Runs in your browser — nothing is uploaded.</span>
+            </div>
+          </div>
+          <div class="result" id="res-check"></div>
+        </div>
+
+        <div class="pull" style="margin-top:16px">
+          <p>A curator confirms every new lineage and its name.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =============================== TOOLKIT ============================== -->
+  <section class="view" id="view-toolkit">
+    <div class="stack">
+      <div>
+        <h1 class="page display">The MalAvi toolkit</h1>
+        <p class="lead">Software and reports built around the database.</p>
+      </div>
+
+      <div>
+        <p class="eyebrow">R packages</p>
+        <div class="files">
+          <a href="#"><span class="nm">malaviR</span><span class="ds">Every table and the alignment, straight into R. Host-name reconciliation, lineage QC, synonymy and ambiguous-pair reports.</span><span class="fm">R</span></a>
+          <a href="#" class="wip"><span class="nm">malaviTree <span class="badge-wip">In development</span></span><span class="ds">Phylogenetics for MalAvi lineages — alignment handling, tree building and comparison. Not yet released.</span><span class="fm">R</span></a>
+        </div>
+      </div>
+
+      <div>
+        <p class="eyebrow">Apps</p>
+        <div class="files">
+          <a href="#"><span class="nm">MalAvi BLAST</span><span class="ds">Match a sequence against every lineage, with full alignment output.</span><span class="fm">App</span></a>
+          <a href="#" class="wip"><span class="nm">Lineage QC <span class="badge-wip">In development</span></span><span class="ds">Run the quality checks over your own set of new lineages before submitting. Not yet available.</span><span class="fm">App</span></a>
+        </div>
+      </div>
+
+      <div>
+        <p class="eyebrow">Reports</p>
+        <div class="files">
+          <a href="#"><span class="nm">Synonymy report</span><span class="ds">Lineage names that resolve to the same sequence.</span><span class="fm" data-stat="release"></span></a>
+          <a href="#"><span class="nm">Ambiguous pairs</span><span class="ds">Lineage pairs separated by ambiguous positions alone.</span><span class="fm" data-stat="release"></span></a>
+          <a href="#"><span class="nm">Lineage QC</span><span class="ds">Sequence checks across the whole release.</span><span class="fm" data-stat="release"></span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================ QUEUE =============================== -->
+  <section class="view" id="view-queue">
+    <div class="stack">
+      <div>
+        <h1 class="page display">The queue</h1>
+        <p class="lead">Every submission is reviewed by a curator before anything enters the
+          database. This page shows the current status of submissions. If one has been waiting
+          longer than expected, please contact the curators.</p>
+      </div>
+
+      <div class="status-track">
+        <div class="status-row"><span class="ref">Submitted 12 July<small>New lineages · 6 sequences · Kenya</small></span><span class="pill p-check">Checking names</span><span class="when">with the curator 2 days</span></div>
+        <div class="status-row"><span class="ref">Submitted 9 July<small>Records · 118 rows · Brazil</small></span><span class="pill p-check">Under review</span><span class="when">with the curator 5 days</span></div>
+        <div class="status-row"><span class="ref">Submitted 2 July<small>Paper only · supplementary tables</small></span><span class="pill p-queue">In the queue</span><span class="when">waiting 12 days</span></div>
+        <div class="status-row"><span class="ref">Submitted 20 June<small>New lineages · 33 sequences · India</small></span><span class="pill p-live">In release <span data-stat="release"></span></span><span class="when">added 24 June</span></div>
+      </div>
+      <p style="font-size:13px;color:var(--ink-3)">Illustrative entries, to show the shape of the page.</p>
+
+      <div>
+        <h2 class="section-title display" style="font-size:26px">Contributors</h2>
+        <p>Contributors are listed here if they wish to be; indicate this on the submission
+          form.</p>
+        <div class="board" style="margin-top:14px">
+          <div class="board-row"><span class="rank display">1</span><span class="who">Your name here<small>Lineages and records you have contributed</small></span><span class="metric">—<small>Lineages</small></span><span class="metric">—<small>Records</small></span></div>
+          <div class="board-row"><span class="rank display">2</span><span class="who">Your name here<small>Listing is opt-in</small></span><span class="metric">—<small>Lineages</small></span><span class="metric">—<small>Records</small></span></div>
+          <div class="board-row"><span class="rank display">3</span><span class="who">Your name here<small>Updated with every release</small></span><span class="metric">—<small>Lineages</small></span><span class="metric">—<small>Records</small></span></div>
+        </div>
+        <p style="margin-top:12px;font-size:13px;color:var(--ink-3)">
+          The board fills in once the new submission route opens.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================ ABOUT =============================== -->
+  <section class="view" id="view-about">
+    <div class="stack">
+      <div>
+        <span class="chip release"><span class="dot"></span><span class="lbl">Release</span><b data-stat="release"></b></span>
+        <h1 class="page display" style="margin-top:14px">About MalAvi</h1>
+        <p class="lead">A database of avian malaria parasites and related haemosporidians —
+          <em class="sci">Plasmodium</em>, <em class="sci">Haemoproteus</em> and
+          <em class="sci">Leucocytozoon</em> — organized around lineages of the mitochondrial
+          cytochrome <em>b</em> gene.</p>
+      </div>
+
+      <div>
+        <p>Avian malaria parasites <em class="sci">Plasmodium</em> and related haemosporidians
+          (<em class="sci">Haemoproteus</em> and <em class="sci">Leucocytozoon</em>) multiply as
+          haploid clones in avian hosts and undergo a sexual phase in dipteran vectors. Although
+          these parasites are more species diverse in the tropics, many have active transmission
+          in temperate regions as far north as the Arctic polar circle. Molecular analyses have
+          revealed that the global species diversity of avian malaria parasites and related
+          haemosporidians is much higher than previously appreciated, perhaps counting thousands
+          of species. Host shifts have been remarkably frequent. In evolutionary time this has
+          been demonstrated by phylogenetic analyses of hosts and parasites and in ecological
+          time it is evidenced by the documentation of identical mitochondrial haplotypes in
+          multiple host species.</p>
+        <p>The majority of haemosporidian parasites appears to be host specialists or restricted
+          to a limited number of closely related host species but this view may change as data
+          will accumulate. To understand the evolution and ecological factors driving this
+          complex multihost-multiparasite system requires good knowledge of the host range and
+          geographical distribution of the parasite lineages. The <em>MalAvi</em> database
+          provides this service.</p>
+        <div class="pull">
+          <p>Note however that a molecular finding of a cytochrome <em>b</em> lineage by PCR is
+            <strong>no guarantee that the species is a competent host</strong>. This requires
+            microscopic examination of thin blood films confirming presence of gametocytes, or
+            ultimately by controlled infection experiments.</p>
+        </div>
+
+        <p style="margin-top:18px">For images of the parasites, see the
+          <a href="https://gamtostyrimai.lt/en/padaliniai/p-b-sivickio-parazitologijos-laboratorija/database-of-haemosporidian-parasites/"
+             target="_blank" rel="noopener">P. B. Šivickis Laboratory of Parasitology</a>
+          in Vilnius.</p>
+      </div>
+
+      <div class="card">
+        <h3>Found an error?</h3>
+        <p>Corrections to any record are welcome. Email the curators with the lineage, host or
+          reference concerned.</p>
+        <div class="btn-row" style="margin-top:14px">
+          <a class="btn" href="mailto:vaellis@udel.edu,staffan.bensch@biol.lu.se?subject=MalAvi%20correction">Report it to the curators</a>
+          <span style="font-size:13px;color:var(--ink-3)" class="mono">vaellis@udel.edu · staffan.bensch@biol.lu.se</span>
+        </div>
+
+        <h3 style="margin-top:26px">Know a study we are missing?</h3>
+        <p>Send the paper and its supplementary materials through the submission form. We will
+          extract the records from it — you do not need to enter them yourself.</p>
+        <div class="btn-row" style="margin-top:14px">
+          <a class="btn" href="#" data-goto="submit">Submit a paper</a>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="section-title display" style="font-size:26px">Editorial board</h2>
+        <p>MalAvi is curated by the people below. Assistant curators review incoming data
+          submissions; the role is an editorial appointment and is listed here so it can be
+          cited on a CV.</p>
+        <p>Listing recognizes sustained work. Assistant curators are appointed once they have
+          reviewed submissions regularly over a period, rather than on a single occasion, and
+          they remain listed for as long as they are active.</p>
+
+        <div class="board-group" style="margin-top:18px">
+          <h3>Curators</h3>
+          <div class="people">
+            <div class="person">
+              <span class="nm">Staffan Bensch</span>
+              <span class="role">Founding curator</span>
+              <span class="aff">Lund University</span>
+              <span class="yrs">2009–</span>
+            </div>
+            <div class="person">
+              <span class="nm">Vincenzo A. Ellis</span>
+              <span class="role">Curator</span>
+              <span class="aff">University of Delaware</span>
+              <span class="yrs">2026–</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="board-group">
+          <h3>Assistant curators</h3>
+          <div class="people">
+            <div class="person vacant">
+              <span class="nm">Your name here</span>
+              <span class="role">Reviews incoming data submissions</span>
+              <span class="yrs">—</span>
+            </div>
+            <div class="person vacant">
+              <span class="nm">Your name here</span>
+              <span class="role">Appointments are listed with the year they began</span>
+              <span class="yrs">—</span>
+            </div>
+          </div>
+        </div>
+
+        <p style="margin-top:14px;font-size:13.5px">
+          Interested? <a href="mailto:vaellis@udel.edu,staffan.bensch@biol.lu.se?subject=MalAvi%20—%20interested%20in%20helping%20curate">Write to the curators</a>.
+        </p>
+
+        <div class="board-group" style="margin-top:26px">
+          <h3>With thanks to</h3>
+          <div class="people">
+            <div class="person">
+              <span class="nm">Tamara Emmenegger</span>
+              <span class="role">Revision of the database and its data handling; much of the
+                groundwork this rebuild is based on</span>
+              <span class="aff">Lund University</span>
+            </div>
+            <div class="person">
+              <span class="nm">Martin Egerhill · Björn Canbäck</span>
+              <span class="role">Built the original MalAvi database and website</span>
+              <span class="aff">Lund University</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>Citing MalAvi</h3>
+        <p>Please cite the database paper, and the release you used — each release is versioned
+          so your analysis stays reproducible.</p>
+        <p class="mono" style="font-size:13px;background:var(--surface-2);padding:13px 15px;border-radius:var(--radius);max-width:none">
+          Bensch S, Hellgren O, Pérez-Tris J (2009). MalAvi: a public database of malaria
+          parasites and related haemosporidians in avian hosts based on mitochondrial cytochrome
+          b lineages. <em>Molecular Ecology Resources</em> 9: 1353–1358.
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="inner">
+    <span>MalAvi · release <span data-stat="release"></span></span>
+    <a href="#" data-goto="tables">Tables</a>
+    <a href="#" data-goto="submit">Submit data</a>
+    <a href="#" data-goto="toolkit">Toolkit</a>
+    <a href="mailto:vaellis@udel.edu,staffan.bensch@biol.lu.se?subject=MalAvi">Contact the curators</a>
+  </div>
+</footer>
+<script type="module" src="assets/js/malavi.js"></script>
+</body>
+</html>

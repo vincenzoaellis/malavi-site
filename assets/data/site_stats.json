@@ -1,0 +1,643 @@
+{
+  "release": "2026-03-23",
+  "generated": "2026-07-27T20:58:30Z",
+  "malaviR_bundled": "2026-03-23",
+  "alignment_length_bp": 479,
+  "totals": {
+    "lineages": 5367,
+    "host_records": 18493,
+    "host_species": 2339,
+    "host_genera": 965,
+    "host_families": 137,
+    "host_orders": 31,
+    "countries": 123,
+    "references": 526,
+    "morpho_species": 124,
+    "morpho_links": 256,
+    "vector_records": 610,
+    "vector_species": 97
+  },
+  "genera": [
+    {
+      "key": "Plasmodium",
+      "lineages": 1406,
+      "records": 7659,
+      "host_species": 1523,
+      "host_genera": 719,
+      "host_families": 116,
+      "host_orders": 31,
+      "countries": 107,
+      "studies": 401
+    },
+    {
+      "key": "Haemoproteus",
+      "lineages": 1906,
+      "records": 6668,
+      "host_species": 1502,
+      "host_genera": 699,
+      "host_families": 119,
+      "host_orders": 25,
+      "countries": 109,
+      "studies": 377
+    },
+    {
+      "key": "Leucocytozoon",
+      "lineages": 1434,
+      "records": 4145,
+      "host_species": 788,
+      "host_genera": 408,
+      "host_families": 92,
+      "host_orders": 23,
+      "countries": 72,
+      "studies": 204
+    }
+  ],
+  "genus_order": ["Plasmodium", "Haemoproteus", "Leucocytozoon"],
+  "unassigned_lineages": 621,
+  "country_studies": {
+    "Algeria": {
+      "P": 1,
+      "H": 1,
+      "L": 1
+    },
+    "Antigua and Barbuda": {
+      "H": 1
+    },
+    "Argentina": {
+      "P": 6,
+      "H": 6,
+      "L": 2
+    },
+    "Armenia": {
+      "P": 1,
+      "H": 1,
+      "L": 1
+    },
+    "Ascension Island": {
+      "H": 1
+    },
+    "Australia": {
+      "P": 10,
+      "H": 12,
+      "L": 1
+    },
+    "Austria": {
+      "P": 7,
+      "H": 7,
+      "L": 6
+    },
+    "Azerbaijan": {
+      "H": 1,
+      "L": 1
+    },
+    "Belarus": {
+      "P": 2,
+      "L": 2
+    },
+    "Belgium": {
+      "P": 2,
+      "H": 3,
+      "L": 1
+    },
+    "Belize": {
+      "P": 1,
+      "H": 1
+    },
+    "Benin": {
+      "P": 1,
+      "H": 1,
+      "L": 1
+    },
+    "Bermuda": {
+      "P": 2
+    },
+    "Bolivia": {
+      "P": 2,
+      "H": 1
+    },
+    "Bosnia and Herzegovina": {
+      "P": 1,
+      "L": 1
+    },
+    "Botswana": {
+      "P": 4,
+      "H": 4,
+      "L": 1
+    },
+    "Brazil": {
+      "P": 39,
+      "H": 24,
+      "L": 4
+    },
+    "Bulgaria": {
+      "P": 12,
+      "H": 14,
+      "L": 3
+    },
+    "Cameroon": {
+      "P": 10,
+      "H": 8,
+      "L": 4
+    },
+    "Canada": {
+      "P": 7,
+      "H": 6,
+      "L": 4
+    },
+    "Cape Verde": {
+      "P": 1,
+      "H": 1
+    },
+    "Cayman Islands": {
+      "H": 1
+    },
+    "Chile": {
+      "P": 10,
+      "H": 7,
+      "L": 7
+    },
+    "China": {
+      "P": 10,
+      "H": 7,
+      "L": 5
+    },
+    "Christmas Island": {
+      "H": 2
+    },
+    "Colombia": {
+      "P": 8,
+      "H": 9,
+      "L": 8
+    },
+    "Comoros": {
+      "P": 2,
+      "H": 1,
+      "L": 1
+    },
+    "Costa Rica": {
+      "P": 3,
+      "H": 4,
+      "L": 2
+    },
+    "Czech Republic": {
+      "P": 9,
+      "H": 5,
+      "L": 5
+    },
+    "Denmark": {
+      "H": 1
+    },
+    "Dominica": {
+      "P": 1,
+      "H": 1
+    },
+    "Dominican Republic": {
+      "P": 1
+    },
+    "Ecuador": {
+      "P": 6,
+      "H": 11,
+      "L": 1
+    },
+    "Egypt": {
+      "P": 2,
+      "H": 1
+    },
+    "Equatorial Guinea": {
+      "P": 2,
+      "H": 1,
+      "L": 1
+    },
+    "Estonia": {
+      "H": 1
+    },
+    "Falkland Islands (Islas Malvinas)": {
+      "P": 1,
+      "H": 1
+    },
+    "Finland": {
+      "P": 3,
+      "H": 3
+    },
+    "France": {
+      "P": 13,
+      "H": 11,
+      "L": 2
+    },
+    "French Polynesia": {
+      "P": 1
+    },
+    "Gabon": {
+      "P": 4,
+      "H": 5,
+      "L": 1
+    },
+    "Germany": {
+      "P": 14,
+      "H": 18,
+      "L": 11
+    },
+    "Ghana": {
+      "P": 5,
+      "H": 3,
+      "L": 2
+    },
+    "Greece": {
+      "P": 4,
+      "H": 4,
+      "L": 3
+    },
+    "Grenada": {
+      "P": 1
+    },
+    "Guadeloupe": {
+      "P": 2,
+      "H": 1
+    },
+    "Guatemala": {
+      "H": 3,
+      "L": 1
+    },
+    "Guyana": {
+      "P": 2,
+      "H": 1
+    },
+    "Honduras": {
+      "P": 1,
+      "H": 1,
+      "L": 1
+    },
+    "Hungary": {
+      "P": 7,
+      "H": 6
+    },
+    "India": {
+      "P": 8,
+      "H": 8
+    },
+    "Iran": {
+      "P": 1,
+      "H": 2,
+      "L": 1
+    },
+    "Israel": {
+      "P": 5,
+      "H": 3,
+      "L": 1
+    },
+    "Italy": {
+      "P": 10,
+      "H": 9,
+      "L": 7
+    },
+    "Japan": {
+      "P": 22,
+      "H": 15,
+      "L": 11
+    },
+    "Kazakhstan": {
+      "P": 1,
+      "H": 3,
+      "L": 2
+    },
+    "Kenya": {
+      "P": 4,
+      "H": 3
+    },
+    "Korea, South": {
+      "P": 2,
+      "H": 1
+    },
+    "Kyrgyzstan": {
+      "P": 1,
+      "H": 1
+    },
+    "Latvia": {
+      "P": 2,
+      "H": 2
+    },
+    "Lithuania": {
+      "P": 13,
+      "H": 16,
+      "L": 11
+    },
+    "Madagascar": {
+      "P": 8,
+      "H": 6,
+      "L": 6
+    },
+    "Malawi": {
+      "P": 2,
+      "H": 1,
+      "L": 1
+    },
+    "Malaysia": {
+      "P": 2,
+      "H": 1,
+      "L": 1
+    },
+    "Mali": {
+      "P": 1,
+      "H": 1
+    },
+    "Malta": {
+      "H": 1
+    },
+    "Martinique": {
+      "P": 1,
+      "H": 2
+    },
+    "Mauritius": {
+      "P": 2,
+      "L": 1
+    },
+    "Mayotte": {
+      "P": 2,
+      "H": 1,
+      "L": 1
+    },
+    "Mexico": {
+      "P": 6,
+      "H": 10,
+      "L": 2
+    },
+    "Mongolia": {
+      "P": 1,
+      "H": 1,
+      "L": 1
+    },
+    "Montserrat": {
+      "H": 1
+    },
+    "Morocco": {
+      "P": 4,
+      "H": 3,
+      "L": 4
+    },
+    "Mozambique": {
+      "P": 1
+    },
+    "Myanmar": {
+      "P": 3,
+      "H": 1,
+      "L": 1
+    },
+    "Namibia": {
+      "P": 1,
+      "H": 1
+    },
+    "Netherlands": {
+      "P": 4,
+      "H": 3
+    },
+    "Netherlands Antilles": {
+      "H": 2
+    },
+    "New Caledonia": {
+      "P": 3,
+      "H": 3
+    },
+    "New Zealand": {
+      "P": 17,
+      "L": 3
+    },
+    "Nicaragua": {
+      "P": 1,
+      "H": 1,
+      "L": 1
+    },
+    "Nigeria": {
+      "P": 7,
+      "H": 7,
+      "L": 2
+    },
+    "Northern Mariana Islands": {
+      "P": 1
+    },
+    "Norway": {
+      "P": 4,
+      "H": 1,
+      "L": 3
+    },
+    "Panama": {
+      "H": 1
+    },
+    "Papua New Guinea": {
+      "P": 3,
+      "H": 4,
+      "L": 1
+    },
+    "Peru": {
+      "P": 10,
+      "H": 14,
+      "L": 5
+    },
+    "Philippines": {
+      "P": 1,
+      "H": 2,
+      "L": 1
+    },
+    "Poland": {
+      "P": 9,
+      "H": 7,
+      "L": 5
+    },
+    "Portugal": {
+      "P": 11,
+      "H": 5,
+      "L": 8
+    },
+    "Réunion": {
+      "P": 2,
+      "L": 1
+    },
+    "Romania": {
+      "P": 3,
+      "H": 3,
+      "L": 2
+    },
+    "Russia": {
+      "P": 20,
+      "H": 18,
+      "L": 5
+    },
+    "Rwanda": {
+      "P": 1
+    },
+    "Saint Lucia": {
+      "P": 2,
+      "H": 1
+    },
+    "São Tomé and Príncipe": {
+      "P": 3,
+      "H": 1,
+      "L": 1
+    },
+    "Senegal": {
+      "P": 2
+    },
+    "Serbia": {
+      "P": 1,
+      "H": 1,
+      "L": 1
+    },
+    "Seychelles": {
+      "P": 1,
+      "H": 2
+    },
+    "Singapore": {
+      "P": 2,
+      "H": 2
+    },
+    "Slovakia": {
+      "P": 1,
+      "H": 1,
+      "L": 1
+    },
+    "South Africa": {
+      "P": 10,
+      "H": 8,
+      "L": 4
+    },
+    "Spain": {
+      "P": 35,
+      "H": 34,
+      "L": 21
+    },
+    "Suriname": {
+      "H": 1
+    },
+    "Sweden": {
+      "P": 27,
+      "H": 24,
+      "L": 10
+    },
+    "Switzerland": {
+      "P": 8,
+      "H": 8,
+      "L": 4
+    },
+    "Tanzania": {
+      "P": 3,
+      "H": 3
+    },
+    "Thailand": {
+      "P": 8,
+      "H": 6,
+      "L": 4
+    },
+    "The Bahamas": {
+      "H": 1
+    },
+    "Trinidad and Tobago": {
+      "H": 1
+    },
+    "Tunisia": {
+      "P": 2,
+      "H": 1
+    },
+    "Turkey": {
+      "P": 5,
+      "H": 8,
+      "L": 6
+    },
+    "Uganda": {
+      "P": 2,
+      "H": 2,
+      "L": 1
+    },
+    "Ukraine": {
+      "P": 2,
+      "H": 1,
+      "L": 1
+    },
+    "United Kingdom": {
+      "P": 10,
+      "H": 13,
+      "L": 3
+    },
+    "United States": {
+      "P": 58,
+      "H": 60,
+      "L": 44
+    },
+    "Uruguay": {
+      "P": 2,
+      "H": 1
+    },
+    "Vanuatu": {
+      "P": 2,
+      "H": 2
+    },
+    "Venezuela": {
+      "P": 4,
+      "H": 4,
+      "L": 1
+    },
+    "Vietnam": {
+      "P": 3,
+      "H": 1
+    },
+    "Yemen": {
+      "L": 1
+    },
+    "Zambia": {
+      "P": 2,
+      "H": 2
+    },
+    "Zimbabwe": {
+      "P": 2,
+      "H": 1
+    }
+  },
+  "countries_unplaced": ["Antigua and Barbuda", "Ascension Island", "Bermuda", "Cape Verde", "Cayman Islands", "Christmas Island", "Comoros", "Dominica", "French Polynesia", "Grenada", "Guadeloupe", "Malta", "Martinique", "Mauritius", "Mayotte", "Montserrat", "Netherlands Antilles", "Northern Mariana Islands", "Réunion", "Saint Lucia", "São Tomé and Príncipe", "Seychelles", "Singapore"],
+  "tables": [
+    {
+      "id": "hosts_and_sites",
+      "title": "Hosts and Sites",
+      "rows": 18493,
+      "description": "Every record of a lineage found in a host: the host taxonomy, where it was found, prevalence where the study reported it, and the reference."
+    },
+    {
+      "id": "grand_lineage_summary",
+      "title": "Grand Lineage Summary",
+      "rows": 5368,
+      "description": "One row per lineage: its GenBank accession, the morphospecies it is linked to if any, and how many host species, genera, families and orders it has been found in."
+    },
+    {
+      "id": "references",
+      "title": "Table of References",
+      "rows": 526,
+      "description": "Every published paper whose records have been entered into MalAvi."
+    },
+    {
+      "id": "morpho_species",
+      "title": "Morpho Species Summary",
+      "rows": 256,
+      "description": "Lineages that have been linked to a morphologically described species, with the reference for the link."
+    },
+    {
+      "id": "vector_data",
+      "title": "Vector Data",
+      "rows": 610,
+      "description": "Lineages detected in arthropod vectors, the detection method, and where."
+    },
+    {
+      "id": "lineage_names",
+      "title": "Table of Lineage Names",
+      "rows": 3102,
+      "description": "MalAvi lineage names against the names used in the original publications. Derived from the ALT_NAME column of the hosts table."
+    }
+  ],
+  "integrity": {
+    "grand_lineage_summary_rows": 5368,
+    "grand_lineage_summary_lineages": 5367,
+    "lineages_on_multiple_rows": ["TUPHI01"],
+    "references_table_rows": 526,
+    "reference_names_in_hosts": 532,
+    "cited_but_not_in_refs": 63,
+    "in_refs_but_never_cited": 56,
+    "host_records_missing_ref": 6,
+    "host_records_unknown_country": 60
+  }
+}
