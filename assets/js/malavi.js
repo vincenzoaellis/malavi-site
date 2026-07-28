@@ -11,16 +11,27 @@
  * top-level await to fetch its data before rendering.
  * ============================================================================= */
 
-/* Feeds that only exist once submissions have been fetched. A missing or
-   unreadable feed must not blank the whole page, so each resolves to null and
+/* GitHub Pages serves these with `Cache-Control: max-age=600`, so a browser will
+   happily show a ten-minute-old copy after a publish. The queue and contributor
+   board change whenever a submission is processed, not only when the release is
+   bumped, so a stale copy is visibly wrong rather than merely out of date.
+   `cache: "no-cache"` does NOT disable caching: it forces the browser to
+   revalidate with the ETag it already holds, so an unchanged file costs a 304
+   and no body transfer. */
+const REVALIDATE = { cache: "no-cache" };
+const feed = (url) => fetch(url, REVALIDATE).then((r) => r.json());
+
+/* The submission feeds only exist once submissions have been fetched. A missing
+   or unreadable feed must not blank the whole page, so each resolves to null and
    the renderers below fall back to an honest "nothing here yet". */
-const optional = (url) => fetch(url).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+const optional = (url) =>
+  fetch(url, REVALIDATE).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
 const [STATS, DATA, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.all([
-  fetch("assets/data/site_stats.json").then((r) => r.json()),
-  fetch("assets/data/tables_preview.json").then((r) => r.json()),
-  fetch("assets/data/world_map.json").then((r) => r.json()),
-  fetch("assets/data/reports.json").then((r) => r.json()),
+  feed("assets/data/site_stats.json"),
+  feed("assets/data/tables_preview.json"),
+  feed("assets/data/world_map.json"),
+  feed("assets/data/reports.json"),
   optional("assets/data/queue.json"),
   optional("assets/data/contributors.json")
 ]);
