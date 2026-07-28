@@ -91,11 +91,7 @@
         <p class="eyebrow">Data reports · release <span data-stat="release"></span></p>
         <p>Each report is generated from a single release and stays fixed to it, so a report
           you cite remains available.</p>
-        <div class="files" style="margin-top:12px">
-          <a href="#"><span class="nm">Synonymy report</span><span class="ds">Lineage names that resolve to the same sequence.</span><span class="fm" data-stat="release"></span></a>
-          <a href="#"><span class="nm">Ambiguous pairs</span><span class="ds">Lineage pairs separated by ambiguous positions alone.</span><span class="fm" data-stat="release"></span></a>
-          <a href="#"><span class="nm">Lineage QC</span><span class="ds">Sequence checks across the whole release: length, frame, duplicates.</span><span class="fm" data-stat="release"></span></a>
-        </div>
+        <div class="files" data-reports style="margin-top:12px"></div>
       </div>
 
       <div class="card">
@@ -127,8 +123,8 @@
           from release <span data-stat="release"></span>.</p>
         <div class="tindex" id="tindex" style="margin-top:20px"></div>
         <div class="files" style="margin-top:18px">
-          <a href="#"><span class="nm">Alignment</span><span class="ds"><span data-stat="alnlen"></span> bp cytochrome <em>b</em>, all lineages, aligned.</span><span class="fm">FASTA</span></a>
-          <a href="#"><span class="nm">Everything</span><span class="ds">All tables plus the alignment, as one archive.</span><span class="fm">ZIP</span></a>
+          <a id="dlAlignment" download><span class="nm">Alignment</span><span class="ds"><span data-stat="alnlen"></span> bp cytochrome <em>b</em>, all lineages, aligned.</span><span class="fm">FASTA</span></a>
+          <a id="dlEverything" download><span class="nm">Everything</span><span class="ds">All tables plus the alignment, as one archive.</span><span class="fm">ZIP</span></a>
         </div>
       </div>
 
@@ -143,8 +139,8 @@
               <option>25</option><option>50</option><option>100</option>
             </select> rows</label>
           <button class="mini" id="clearFilters">Clear filters</button>
-          <a class="mini" href="#" id="dlCsv">Download CSV</a>
-          <a class="mini" href="#" id="dlXlsx">Download Excel</a>
+          <a class="mini" id="dlCsv" download>Download CSV</a>
+          <a class="mini" id="dlXlsx" download>Download Excel</a>
           <div class="pager" id="pagerTop"></div>
         </div>
 
@@ -332,7 +328,7 @@
         <p class="eyebrow">R packages</p>
         <div class="files">
           <a href="https://github.com/vincenzoaellis/malaviR" target="_blank" rel="noopener"><span class="nm">malaviR</span><span class="ds">Every table and the alignment, straight into R. Host-name reconciliation, lineage QC, synonymy and ambiguous-pair reports.</span><span class="fm">R</span></a>
-          <a href="#" class="wip"><span class="nm">malaviTree <span class="badge-wip">In development</span></span><span class="ds">Phylogenetics for MalAvi lineages: alignment handling, tree building and comparison. Not yet released.</span><span class="fm">R</span></a>
+          <a class="wip"><span class="nm">malaviTree <span class="badge-wip">In development</span></span><span class="ds">Phylogenetics for MalAvi lineages: alignment handling, tree building and comparison. Not yet released.</span><span class="fm">R</span></a>
         </div>
       </div>
 
@@ -340,17 +336,13 @@
         <p class="eyebrow">Apps</p>
         <div class="files">
           <a href="https://811l41-vincenzo-ellis.shinyapps.io/MalAviBLAST/" target="_blank" rel="noopener"><span class="nm">MalAvi BLAST</span><span class="ds">Match a sequence against every lineage, with full alignment output.</span><span class="fm">App</span></a>
-          <a href="#" class="wip"><span class="nm">Lineage QC <span class="badge-wip">In development</span></span><span class="ds">Run the quality checks over your own set of new lineages before submitting. Not yet available.</span><span class="fm">App</span></a>
+          <a class="wip"><span class="nm">Lineage QC <span class="badge-wip">In development</span></span><span class="ds">Run the quality checks over your own set of new lineages before submitting. Not yet available.</span><span class="fm">App</span></a>
         </div>
       </div>
 
       <div>
         <p class="eyebrow">Reports</p>
-        <div class="files">
-          <a href="#"><span class="nm">Synonymy report</span><span class="ds">Lineage names that resolve to the same sequence.</span><span class="fm" data-stat="release"></span></a>
-          <a href="#"><span class="nm">Ambiguous pairs</span><span class="ds">Lineage pairs separated by ambiguous positions alone.</span><span class="fm" data-stat="release"></span></a>
-          <a href="#"><span class="nm">Lineage QC</span><span class="ds">Sequence checks across the whole release.</span><span class="fm" data-stat="release"></span></a>
-        </div>
+        <div class="files" data-reports></div>
       </div>
     </div>
   </section>
@@ -365,23 +357,13 @@
           longer than expected, please contact the curators.</p>
       </div>
 
-      <div class="status-track">
-        <div class="status-row"><span class="ref">Submitted 12 July<small>New lineages · 6 sequences · Kenya</small></span><span class="pill p-check">Checking names</span><span class="when">with the curator 2 days</span></div>
-        <div class="status-row"><span class="ref">Submitted 9 July<small>Records · 118 rows · Brazil</small></span><span class="pill p-check">Under review</span><span class="when">with the curator 5 days</span></div>
-        <div class="status-row"><span class="ref">Submitted 2 July<small>Paper only · supplementary tables</small></span><span class="pill p-queue">In the queue</span><span class="when">waiting 12 days</span></div>
-        <div class="status-row"><span class="ref">Submitted 20 June<small>New lineages · 33 sequences · India</small></span><span class="pill p-live">In release <span data-stat="release"></span></span><span class="when">added 24 June</span></div>
-      </div>
-      <p style="font-size:13px;color:var(--ink-3)">Illustrative entries, to show the shape of the page.</p>
+      <p style="font-size:13px;color:var(--ink-3)">No submissions are in the queue yet. This page
+        will list them as they arrive.</p>
 
       <div>
         <h2 class="section-title display" style="font-size:26px">Contributors</h2>
         <p>Contributors are listed here if they wish to be; indicate this on the submission
           form.</p>
-        <div class="board" style="margin-top:14px">
-          <div class="board-row"><span class="rank display">1</span><span class="who">Your name here<small>Lineages and records you have contributed</small></span><span class="metric">—<small>Lineages</small></span><span class="metric">—<small>Records</small></span></div>
-          <div class="board-row"><span class="rank display">2</span><span class="who">Your name here<small>Listing is opt-in</small></span><span class="metric">—<small>Lineages</small></span><span class="metric">—<small>Records</small></span></div>
-          <div class="board-row"><span class="rank display">3</span><span class="who">Your name here<small>Updated with every release</small></span><span class="metric">—<small>Lineages</small></span><span class="metric">—<small>Records</small></span></div>
-        </div>
         <p style="margin-top:12px;font-size:13px;color:var(--ink-3)">
           The board fills in once the new submission route opens.
         </p>
@@ -468,18 +450,8 @@
 
         <div class="board-group">
           <h3>Assistant curators</h3>
-          <div class="people">
-            <div class="person vacant">
-              <span class="nm">Your name here</span>
-              <span class="role">Reviews incoming data submissions</span>
-              <span class="yrs">—</span>
-            </div>
-            <div class="person vacant">
-              <span class="nm">Your name here</span>
-              <span class="role">Appointments are listed with the year they began</span>
-              <span class="yrs">—</span>
-            </div>
-          </div>
+          <p style="font-size:13.5px;color:var(--ink-3)">No assistant curators have been
+            appointed yet. Appointments are listed here with the year they began.</p>
         </div>
 
         <p style="margin-top:14px;font-size:13.5px">
@@ -491,8 +463,8 @@
           <div class="people">
             <div class="person">
               <span class="nm">Tamara Emmenegger</span>
-              <span class="role">Revision of the database and its data handling; much of the
-                groundwork this rebuild is based on</span>
+              <span class="role">Revision of the database and its data handling; she provided
+                much of the groundwork this rebuild is based on</span>
             </div>
             <div class="person">
               <span class="nm">Martin Egerhill · Björn Canbäck</span>

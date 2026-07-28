@@ -11,10 +11,11 @@
  * top-level await to fetch its data before rendering.
  * ============================================================================= */
 
-const [STATS, DATA, MAP] = await Promise.all([
+const [STATS, DATA, MAP, REPORTS] = await Promise.all([
   fetch("assets/data/site_stats.json").then((r) => r.json()),
   fetch("assets/data/tables_preview.json").then((r) => r.json()),
-  fetch("assets/data/world_map.json").then((r) => r.json())
+  fetch("assets/data/world_map.json").then((r) => r.json()),
+  fetch("assets/data/reports.json").then((r) => r.json())
 ]);
 (function () {
   "use strict";
@@ -299,6 +300,33 @@ const [STATS, DATA, MAP] = await Promise.all([
       "</div></div>";
   }).join("");
 
+  /* ------------------------------------------------- downloads and reports */
+  /* Every generated file is named <stem>_<release>.<ext>, so the release string
+     is the only thing needed to build a link. Nothing here is hard-coded: bump
+     the release, re-run the export scripts, and the links follow. */
+  var RELEASE = STATS.release;
+
+  var alignmentLink = document.getElementById("dlAlignment");
+  if (alignmentLink) {
+    alignmentLink.href = "assets/downloads/malavi_alignment_" + RELEASE + ".fasta";
+  }
+  var everythingLink = document.getElementById("dlEverything");
+  if (everythingLink) {
+    everythingLink.href = "assets/downloads/malavi_" + RELEASE + ".zip";
+  }
+
+  /* The report cards are rendered from reports.json, written by
+     export/build_reports.R alongside the CSVs it generates, so the row counts
+     shown here cannot drift from the files they describe. */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-reports]"), function (host) {
+    host.innerHTML = REPORTS.reports.map(function (r) {
+      return '<a href="assets/reports/' + encodeURIComponent(r.file) + '" download>' +
+             '<span class="nm">' + escapeHtml(r.title) + "</span>" +
+             '<span class="ds">' + escapeHtml(r.description) + "</span>" +
+             '<span class="fm">CSV · ' + n(r.rows) + " rows</span></a>";
+    }).join("");
+  });
+
   /* ------------------------------------------------------------ table view */
   var state = { table: null, page: 0, size: 25, filters: {} };
   var indexEl = document.getElementById("tablesIndex");
@@ -314,6 +342,12 @@ const [STATS, DATA, MAP] = await Promise.all([
     document.getElementById("tvNote").textContent =
       "Showing " + n(state.table.rows.length) + " sample rows of " +
       n(state.table.totalRows) + " for this preview. The live table carries all of them.";
+    /* Point the two download buttons at this table's generated files. The page
+       only holds a preview, so these must serve the complete table, not what is
+       currently filtered on screen. */
+    var stem = "assets/downloads/tables/" + state.table.id + "_" + RELEASE;
+    document.getElementById("dlCsv").href = stem + ".csv";
+    document.getElementById("dlXlsx").href = stem + ".xlsx";
     buildHead();
     render();
     indexEl.style.display = "none";
