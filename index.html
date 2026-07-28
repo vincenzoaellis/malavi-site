@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MalAvi — a database of avian haemosporidian lineages</title>
+<title>MalAvi: a database of avian haemosporidian lineages</title>
 <meta name="description" content="MalAvi is a database of avian malaria parasites and related
   haemosporidians (Plasmodium, Haemoproteus, Leucocytozoon), organized around lineages of the
   mitochondrial cytochrome b gene.">
@@ -59,14 +59,14 @@
         <p class="eyebrow">Lineages by parasite genus</p>
         <div class="donuts" id="donuts"></div>
         <p style="margin-top:10px;font-size:12.5px;color:var(--ink-3)">
-          <span data-stat="unassigned"></span> lineages have no host record carrying a genus assignment and are not counted above.
+          <span data-stat="unassigned"></span> lineages have no genus recorded and are not counted above.
         </p>
       </div>
 
       <div>
         <p class="eyebrow">How widely each genus has been sampled</p>
         <p>Host taxa are counted per parasite genus. A host species can carry more than one
-          genus, so these do not sum to the totals above — they show reach, not shares.</p>
+          genus, so these do not sum to the totals above.</p>
         <div class="legend" id="rankLegend" style="margin:0 0 16px"></div>
         <div class="ranks" id="ranks"></div>
       </div>
@@ -94,7 +94,7 @@
         <div class="files" style="margin-top:12px">
           <a href="#"><span class="nm">Synonymy report</span><span class="ds">Lineage names that resolve to the same sequence.</span><span class="fm" data-stat="release"></span></a>
           <a href="#"><span class="nm">Ambiguous pairs</span><span class="ds">Lineage pairs separated by ambiguous positions alone.</span><span class="fm" data-stat="release"></span></a>
-          <a href="#"><span class="nm">Lineage QC</span><span class="ds">Sequence checks across the whole release — length, frame, duplicates.</span><span class="fm" data-stat="release"></span></a>
+          <a href="#"><span class="nm">Lineage QC</span><span class="ds">Sequence checks across the whole release: length, frame, duplicates.</span><span class="fm" data-stat="release"></span></a>
         </div>
       </div>
 
@@ -105,15 +105,13 @@
           <span style="font-size:13px;color:var(--ink-3)" class="mono">vaellis@udel.edu · staffan.bensch@biol.lu.se</span>
         </div>
         <h3 style="margin-top:26px">Would you like to help curate?</h3>
-        <p>We welcome <strong>assistant curators</strong> to help review data submissions. The
-          work is much like refereeing a paper: checking that records match what the study
-          reports.</p>
-        <p>As more curators join, submissions will be assigned out for review through a shared
-          editorial address rather than going to a single curator. Assistant curators are listed
-          on the <a href="#" data-goto="about">editorial board</a>, so the role is a citable
-          appointment. Write to us if you are interested.</p>
+        <p>We welcome <strong>assistant curators</strong> to help review and retrieve data for
+          inclusion in the upcoming versions of MalAvi.</p>
+        <p>Sustained, repeated help with curation will earn you an official
+          <strong>Assistant Curator</strong> title that you can cite on your CV, and we will post
+          your information on the <a href="#" data-goto="about">website</a>.</p>
         <div class="btn-row" style="margin-top:14px">
-          <a class="btn ghost" href="mailto:vaellis@udel.edu,staffan.bensch@biol.lu.se?subject=MalAvi%20—%20interested%20in%20helping%20curate">Offer to help</a>
+          <a class="btn ghost" href="mailto:vaellis@udel.edu,staffan.bensch@biol.lu.se?subject=MalAvi:%20interested%20in%20helping%20curate">Offer to help</a>
         </div>
       </div>
 
@@ -197,7 +195,7 @@
         <div class="step">
           <div class="num display">2</div>
           <h3>When it is accepted</h3>
-          <p>Send the records — which lineage, in which host, where, and how many were tested.
+          <p>Send the records: which lineage, in which host, where, and how many were tested.
             Plus the paper and its supplementary files if you can.</p>
         </div>
         <div class="step">
@@ -211,8 +209,8 @@
       <div>
         <h3>What to send</h3>
         <div class="files" style="margin-top:12px">
-          <a href="#"><span class="nm">Submission template</span><span class="ds">One workbook covers both stages. Fill the green columns.</span><span class="fm">XLSX</span></a>
-          <a href="#"><span class="nm">Worked example</span><span class="ds">A real filled submission — Gupta et al. 2019, 47 lineages, 28 hosts, 13 sites.</span><span class="fm">XLSX</span></a>
+          <a href="assets/downloads/ImportMalavi_Template_2026-07.xlsx" download><span class="nm">Submission template</span><span class="ds">One workbook covers both stages. Fill the green columns.</span><span class="fm">XLSX</span></a>
+          <a href="assets/downloads/Gupta_ImportMalavi_Example.xlsx" download><span class="nm">Worked example</span><span class="ds">A real filled submission from Gupta et al. 2019: 47 lineages, 28 hosts, 13 sites.</span><span class="fm">XLSX</span></a>
         </div>
         <div class="btn-row" style="margin-top:16px">
           <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdNyJ31gofIl_2qfFC1dwz-_ctneXnw60xc7ZX6k5Fi4g2cUA/viewform" target="_blank" rel="noopener">Upload the paper and supplementary files</a>
@@ -232,37 +230,37 @@
       <div>
         <h3>The detail, if you want it</h3>
         <details class="more">
-          <summary>Stage 1 — naming new lineages</summary>
+          <summary>Stage 1: naming new lineages</summary>
           <div class="body">
             <p>A new lineage is a sequence that differs at one or more positions from the most
               similar sequence already in MalAvi.</p>
             <ul>
               <li>Names are a <strong>5–6 letter acronym from the scientific name of the first
-                host it was found in, plus a two-digit number</strong> —
+                host it was found in, plus a two-digit number</strong>:
                 <span class="mono">Alcippe poioicephala → ALCPOI02</span>. The name must be unique.</li>
               <li>Fill the <strong>NewLineages</strong> sheet, one representative host species per lineage.</li>
-              <li>Fill the <strong>Reference</strong> sheet — a preliminary title is enough.</li>
+              <li>Fill the <strong>Reference</strong> sheet. A preliminary title is enough.</li>
               <li>Give the sequences, on the <strong>Sequences</strong> sheet or as a FASTA file
                 whose names match your proposed names.</li>
               <li>Send us the accession numbers once you have deposited in GenBank.</li>
             </ul>
             <p style="font-size:14px">Please send the sequences themselves whether or not they
-              are in GenBank — accession numbers alone are not enough.</p>
+              are in GenBank. Accession numbers alone are not enough.</p>
           </div>
         </details>
         <details class="more">
-          <summary>Stage 2 — the records</summary>
+          <summary>Stage 2: the records</summary>
           <div class="body">
             <ul>
-              <li><strong>Hosts_and_Sites</strong> — one row per lineage / host species / site
+              <li><strong>Hosts_and_Sites</strong>: one row per lineage / host species / site
                 combination.</li>
-              <li><strong>Sites</strong> — latitude and longitude as degrees and decimal minutes,
+              <li><strong>Sites</strong>: latitude and longitude as degrees and decimal minutes,
                 e.g. <span class="mono">11°28.20000', 076°07.80000'</span>. Decimal degrees are
                 fine too; we convert and show you what we read.</li>
-              <li><strong>Alt_Lineage_names</strong> — if your paper calls an existing MalAvi
+              <li><strong>Alt_Lineage_names</strong>: if your paper calls an existing MalAvi
                 lineage by a different name. Please fill this in; it avoids substantial work
                 reconciling names during curation.</li>
-              <li><strong>Vectors</strong> — if you screened arthropods.</li>
+              <li><strong>Vectors</strong>: if you screened arthropods.</li>
             </ul>
           </div>
         </details>
@@ -275,10 +273,8 @@
               <dt>Red columns</dt><dd>Not required. These were database index numbers and are now
                 filled in by the curator. The exception is <span class="mono">HOST_SPECIES_ID</span>,
                 which you may take from the NCBI taxonomy browser.</dd>
-              <dt>Reference key</dt><dd>Use the same string on every sheet.
-                <span class="mono">Gupta et al 2019</span> on one sheet and
-                <span class="mono">Gupta et al 2020</span> on another is a common error, and the
-                checks will flag it.</dd>
+              <dt>Reference key</dt><dd>Use the same string on every sheet, e.g.,
+                <span class="mono">Gupta et al. 2019</span>.</dd>
               <dt>Prevalence</dt><dd>Number found and number tested, where your study reports
                 them. Found must not exceed tested.</dd>
               <dt>Minimum length</dt><dd>470 bp of unambiguous sequence within the 479 bp window.</dd>
@@ -288,17 +284,18 @@
         <details class="more">
           <summary>If you only have a paper</summary>
           <div class="body">
-            <p>Send the PDF and its supplementary tables and tell us what they contain — host–parasite
-              associations, localities, prevalence, vector records — and we will do the extraction.</p>
-            <p>Older papers are also welcome. If you have published work that never made it into
-              MalAvi, please send it.</p>
+            <p>Send the PDF and its supplementary tables and tell us what they contain: host-parasite
+              associations, localities, prevalence, vector records. We will do the extraction.</p>
+            <p>Older papers are also welcome. If you find any older papers that were missed in
+              previous versions of MalAvi, please send them (and the supplementary materials if
+              appropriate) to us either using the form or email.</p>
           </div>
         </details>
       </div>
 
       <div id="checker">
         <h2 class="section-title display">Check a sequence</h2>
-        <p>One sequence at a time. Paste it plain or with a FASTA header — either works. This
+        <p>One sequence at a time. Paste it plain or with a Fasta header. This
           tells you whether it is already in MalAvi, which genus it looks like, and whether it
           is long enough to be named as new.</p>
         <div class="card" style="margin-top:16px">
@@ -309,7 +306,7 @@
             <div class="btn-row">
               <button class="btn" type="button" data-check="seq-check" data-out="res-check">Run the checks</button>
               <button class="btn ghost" type="button" data-demo="seq-check">Use an example</button>
-              <span style="font-size:12.5px;color:var(--ink-3)">Runs in your browser — nothing is uploaded.</span>
+              <span style="font-size:12.5px;color:var(--ink-3)">Runs in your browser. Nothing is uploaded.</span>
             </div>
           </div>
           <div class="result" id="res-check"></div>
@@ -334,15 +331,15 @@
       <div>
         <p class="eyebrow">R packages</p>
         <div class="files">
-          <a href="#"><span class="nm">malaviR</span><span class="ds">Every table and the alignment, straight into R. Host-name reconciliation, lineage QC, synonymy and ambiguous-pair reports.</span><span class="fm">R</span></a>
-          <a href="#" class="wip"><span class="nm">malaviTree <span class="badge-wip">In development</span></span><span class="ds">Phylogenetics for MalAvi lineages — alignment handling, tree building and comparison. Not yet released.</span><span class="fm">R</span></a>
+          <a href="https://github.com/vincenzoaellis/malaviR" target="_blank" rel="noopener"><span class="nm">malaviR</span><span class="ds">Every table and the alignment, straight into R. Host-name reconciliation, lineage QC, synonymy and ambiguous-pair reports.</span><span class="fm">R</span></a>
+          <a href="#" class="wip"><span class="nm">malaviTree <span class="badge-wip">In development</span></span><span class="ds">Phylogenetics for MalAvi lineages: alignment handling, tree building and comparison. Not yet released.</span><span class="fm">R</span></a>
         </div>
       </div>
 
       <div>
         <p class="eyebrow">Apps</p>
         <div class="files">
-          <a href="#"><span class="nm">MalAvi BLAST</span><span class="ds">Match a sequence against every lineage, with full alignment output.</span><span class="fm">App</span></a>
+          <a href="https://811l41-vincenzo-ellis.shinyapps.io/MalAviBLAST/" target="_blank" rel="noopener"><span class="nm">MalAvi BLAST</span><span class="ds">Match a sequence against every lineage, with full alignment output.</span><span class="fm">App</span></a>
           <a href="#" class="wip"><span class="nm">Lineage QC <span class="badge-wip">In development</span></span><span class="ds">Run the quality checks over your own set of new lineages before submitting. Not yet available.</span><span class="fm">App</span></a>
         </div>
       </div>
@@ -398,32 +395,21 @@
       <div>
         <span class="chip release"><span class="dot"></span><span class="lbl">Release</span><b data-stat="release"></b></span>
         <h1 class="page display" style="margin-top:14px">About MalAvi</h1>
-        <p class="lead">A database of avian malaria parasites and related haemosporidians —
-          <em class="sci">Plasmodium</em>, <em class="sci">Haemoproteus</em> and
-          <em class="sci">Leucocytozoon</em> — organized around lineages of the mitochondrial
+        <p class="lead">A database of avian malaria parasites and related haemosporidians
+          (<em class="sci">Plasmodium</em>, <em class="sci">Haemoproteus</em> and
+          <em class="sci">Leucocytozoon</em>), organized around lineages of the mitochondrial
           cytochrome <em>b</em> gene.</p>
       </div>
 
       <div>
         <p>Avian malaria parasites <em class="sci">Plasmodium</em> and related haemosporidians
           (<em class="sci">Haemoproteus</em> and <em class="sci">Leucocytozoon</em>) multiply as
-          haploid clones in avian hosts and undergo a sexual phase in dipteran vectors. Although
-          these parasites are more species diverse in the tropics, many have active transmission
-          in temperate regions as far north as the Arctic polar circle. Molecular analyses have
-          revealed that the global species diversity of avian malaria parasites and related
-          haemosporidians is much higher than previously appreciated, perhaps counting thousands
-          of species. Host shifts have been remarkably frequent. In evolutionary time this has
-          been demonstrated by phylogenetic analyses of hosts and parasites and in ecological
-          time it is evidenced by the documentation of identical mitochondrial haplotypes in
-          multiple host species.</p>
-        <p>The majority of haemosporidian parasites appears to be host specialists or restricted
-          to a limited number of closely related host species but this view may change as data
-          will accumulate. To understand the evolution and ecological factors driving this
-          complex multihost-multiparasite system requires good knowledge of the host range and
-          geographical distribution of the parasite lineages. The <em>MalAvi</em> database
-          provides this service.</p>
+          haploid clones in avian hosts and undergo a sexual phase in dipteran vectors.
+          Understanding their ecology and evolution requires detailed records of their host
+          ranges and geographic distributions. The <em>MalAvi</em> database provides that
+          service.</p>
         <div class="pull">
-          <p>Note however that a molecular finding of a cytochrome <em>b</em> lineage by PCR is
+          <p>Please note that a molecular finding of a cytochrome <em>b</em> lineage by PCR is
             <strong>no guarantee that the species is a competent host</strong>. This requires
             microscopic examination of thin blood films confirming presence of gametocytes, or
             ultimately by controlled infection experiments.</p>
@@ -444,9 +430,10 @@
           <span style="font-size:13px;color:var(--ink-3)" class="mono">vaellis@udel.edu · staffan.bensch@biol.lu.se</span>
         </div>
 
-        <h3 style="margin-top:26px">Know a study we are missing?</h3>
-        <p>Send the paper and its supplementary materials through the submission form. We will
-          extract the records from it — you do not need to enter them yourself.</p>
+        <h3 style="margin-top:26px">Know of a study we missed?</h3>
+        <p>Send the paper and its supplementary materials through the data submission form. If
+          you fill out the template, even better. But if you don't have time, we will extract
+          the data from the documents you send.</p>
         <div class="btn-row" style="margin-top:14px">
           <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdNyJ31gofIl_2qfFC1dwz-_ctneXnw60xc7ZX6k5Fi4g2cUA/viewform" target="_blank" rel="noopener">Submit a paper</a>
         </div>
@@ -496,7 +483,7 @@
         </div>
 
         <p style="margin-top:14px;font-size:13.5px">
-          Interested? <a href="mailto:vaellis@udel.edu,staffan.bensch@biol.lu.se?subject=MalAvi%20—%20interested%20in%20helping%20curate">Write to the curators</a>.
+          Interested? <a href="mailto:vaellis@udel.edu,staffan.bensch@biol.lu.se?subject=MalAvi:%20interested%20in%20helping%20curate">Write to the curators</a>.
         </p>
 
         <div class="board-group" style="margin-top:26px">
@@ -518,7 +505,7 @@
 
       <div>
         <h3>Citing MalAvi</h3>
-        <p>Please cite the database paper, and the release you used — each release is versioned
+        <p>Please cite the database paper, and the release you used. Each release is versioned
           so your analysis stays reproducible.</p>
         <p class="mono" style="font-size:13px;background:var(--surface-2);padding:13px 15px;border-radius:var(--radius);max-width:none">
           Bensch S, Hellgren O, Pérez-Tris J (2009). MalAvi: a public database of malaria

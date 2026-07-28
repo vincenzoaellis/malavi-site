@@ -1,6 +1,6 @@
 {
   "release": "2026-03-23",
-  "generated": "2026-07-28T00:59:15Z",
+  "generated": "2026-07-28T02:06:33Z",
   "malaviR_bundled": "2026-03-23",
   "alignment_length_bp": 479,
   "totals": {
@@ -20,7 +20,7 @@
   "genera": [
     {
       "key": "Plasmodium",
-      "lineages": 1406,
+      "lineages": 1628,
       "records": 7659,
       "host_species": 1523,
       "host_genera": 719,
@@ -31,7 +31,7 @@
     },
     {
       "key": "Haemoproteus",
-      "lineages": 1906,
+      "lineages": 2091,
       "records": 6668,
       "host_species": 1502,
       "host_genera": 699,
@@ -42,7 +42,7 @@
     },
     {
       "key": "Leucocytozoon",
-      "lineages": 1434,
+      "lineages": 1644,
       "records": 4145,
       "host_species": 788,
       "host_genera": 408,
@@ -53,7 +53,7 @@
     }
   ],
   "genus_order": ["Plasmodium", "Haemoproteus", "Leucocytozoon"],
-  "unassigned_lineages": 621,
+  "unassigned_lineages": 4,
   "country_studies": {
     "Algeria": {
       "P": 1,

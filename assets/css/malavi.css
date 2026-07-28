@@ -1,5 +1,5 @@
 /* =============================================================================
- * malavi.css — the MalAvi site's styles.
+ * malavi.css: the MalAvi site's styles.
  *
  * Split out of the original single-file design preview. Colors are defined once
  * as custom properties on :root and consumed only through those tokens, so the
@@ -354,6 +354,13 @@ dl.fields dd { margin:0; color:var(--ink-2); }
 /* ---- Queue / contributors ---- */
 .status-track, .board { display:grid; gap:1px; background:var(--rule-soft);
   border:1px solid var(--rule); border-radius:var(--radius); overflow:hidden; }
+/* Both lists grow without bound as submissions and contributors accumulate, so
+   cap their height and let them scroll internally rather than pushing the rest
+   of the page down. max-height is in rem so it tracks the user's font size, and
+   the value is a deliberate half-row (about 8.5 rows) so a clipped row is
+   visible at the fold and the list reads as scrollable. overflow-y:auto adds no
+   scrollbar until the content actually overflows, so short lists look normal. */
+.status-track, .board { max-height:34rem; overflow-y:auto; }
 .status-row { background:var(--surface); padding:13px 17px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
 .status-row .ref { font-size:14px; color:var(--ink); min-width:210px; }
 .status-row .ref small { display:block; color:var(--ink-3); font-size:12px; }
