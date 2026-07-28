@@ -1,31 +1,7 @@
 {
-  "generated": "2026-07-28T03:59:12Z",
-  "n_submissions": 3,
+  "generated": "2026-07-28T04:03:56Z",
+  "n_submissions": 1,
   "items": [
-    {
-      "id": "20260727T210110_submission",
-      "submitted": "2026-07-27",
-      "status": "Under review",
-      "pill": "p-check",
-      "detail": "Paper and supplementary materials",
-      "n_lineages": 0,
-      "n_records": 0,
-      "n_files": 1,
-      "n_warnings": 0,
-      "n_errors": 0
-    },
-    {
-      "id": "20260727T211404_Vincenzo_Ellis",
-      "submitted": "2026-07-27",
-      "status": "Under review",
-      "pill": "p-check",
-      "detail": "Paper and supplementary materials · unpublished",
-      "n_lineages": 0,
-      "n_records": 0,
-      "n_files": 1,
-      "n_warnings": 0,
-      "n_errors": 0
-    },
     {
       "id": "20260727T233146_Vincenzo_Ellis",
       "submitted": "2026-07-27",
