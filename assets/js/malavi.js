@@ -289,6 +289,19 @@ const [STATS, DATA, MAP, REPORTS] = await Promise.all([
     };
   }).filter(function (t) { return t.columns.length; });
 
+  /* ------------------------------------------------- downloads and reports */
+  /* Every generated file is named <stem>_<release>.<ext>, so the release string
+     is the only thing needed to build a link. Nothing here is hard-coded: bump
+     the release, re-run the export scripts, and the links follow. */
+  var RELEASE = STATS.release;
+
+  /* The one place a table's download URLs are built. Both the table index and
+     the open-table toolbar call this, so the two sets of buttons cannot get out
+     of step with each other or with the generated filenames. */
+  function tableDownloadHref(tableId, ext) {
+    return "assets/downloads/tables/" + tableId + "_" + RELEASE + "." + ext;
+  }
+
   document.getElementById("tindex").innerHTML = TABLES.map(function (t) {
     return '<div class="tindex-row">' +
       '<div class="tindex-main"><a data-open="' + t.id + '">' + escapeHtml(t.title) + "</a>" +
@@ -296,15 +309,10 @@ const [STATS, DATA, MAP, REPORTS] = await Promise.all([
       '<span class="rowcount">' + n(t.totalRows) + " rows</span>" +
       '<div class="tindex-actions">' +
         '<button class="mini" data-open="' + t.id + '">Open</button>' +
-        '<a class="mini" href="#">CSV</a><a class="mini" href="#">Excel</a>' +
+        '<a class="mini" href="' + tableDownloadHref(t.id, "csv") + '" download>CSV</a>' +
+        '<a class="mini" href="' + tableDownloadHref(t.id, "xlsx") + '" download>Excel</a>' +
       "</div></div>";
   }).join("");
-
-  /* ------------------------------------------------- downloads and reports */
-  /* Every generated file is named <stem>_<release>.<ext>, so the release string
-     is the only thing needed to build a link. Nothing here is hard-coded: bump
-     the release, re-run the export scripts, and the links follow. */
-  var RELEASE = STATS.release;
 
   var alignmentLink = document.getElementById("dlAlignment");
   if (alignmentLink) {
@@ -345,9 +353,8 @@ const [STATS, DATA, MAP, REPORTS] = await Promise.all([
     /* Point the two download buttons at this table's generated files. The page
        only holds a preview, so these must serve the complete table, not what is
        currently filtered on screen. */
-    var stem = "assets/downloads/tables/" + state.table.id + "_" + RELEASE;
-    document.getElementById("dlCsv").href = stem + ".csv";
-    document.getElementById("dlXlsx").href = stem + ".xlsx";
+    document.getElementById("dlCsv").href  = tableDownloadHref(state.table.id, "csv");
+    document.getElementById("dlXlsx").href = tableDownloadHref(state.table.id, "xlsx");
     buildHead();
     render();
     indexEl.style.display = "none";
