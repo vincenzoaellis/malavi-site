@@ -17,11 +17,15 @@
  *     full ungapped comparison. No heuristic scoring, no cutoffs that could
  *     silently drop a true match.
  *   - IUPAC ambiguity codes compare by base set, so a query with an N or an R
- *     at a position still matches a reference that has a concrete base there.
- *     An ambiguous site is not a difference, which is also what the submission
- *     guidance tells people.
+ *     at a position still matches a reference that has a concrete base there --
+ *     and so does the reverse, a reference with an N against a submitter's clean
+ *     read. An ambiguous site is not a difference, which is also what the
+ *     submission guidance tells people. Ambiguous positions are handled the same
+ *     way at every stage: in the comparison, in the exact scan, and in seeding.
  *   - When it cannot find a match it says so plainly and points at BLAST,
- *     rather than guessing at a nearest neighbour.
+ *     rather than guessing at a nearest neighbour. And when it could not
+ *     properly look -- a read so ambiguous that no stretch of it is definite
+ *     enough to search with -- it says THAT, instead of reporting no match.
  *
  * It is a helper, not a verdict. A curator confirms every new lineage. The page
  * copy says so, and this module should never be made to sound more certain.
@@ -59,6 +63,56 @@ const COMPATIBLE = (() => {
   }
   return table;
 })();
+
+/* An ambiguous position is compared by base set (above), but it cannot be looked
+   up in an exact k-mer index by letter -- the index holds concrete words only.
+   Rather than throw such a window away, we expand it into the concrete words it
+   could stand for and look each one up. This is what stops a mediocre read from
+   blinding the checker entirely; see EXPANDING AMBIGUOUS SEEDS below.
+
+   The budget is on the number of realizations, not the number of codes, because
+   that is what the work is proportional to: one N is 4 words, two Ns are 16, one
+   R is 2, an R and an N together are 8. Sixteen keeps the worst case at ~114
+   windows x 16 lookups per orientation, negligible beside the comparison work
+   that follows. */
+const MAX_SEED_EXPANSION = 16;
+
+/**
+ * Expand a k-mer into the concrete ACGT words it is compatible with.
+ *
+ * Returns the single word unchanged when it is already concrete, an array of
+ * realizations when it is ambiguous but within MAX_SEED_EXPANSION, and null when
+ * it is too ambiguous to expand or contains something that is not a nucleotide
+ * code at all (a gap, a stray letter). Null means "this window cannot be used as
+ * a seed", which is the same answer the module gave for every ambiguous window
+ * before.
+ */
+export function expandSeedWord(word, maxVariants = MAX_SEED_EXPANSION) {
+  // Fast path: the overwhelming majority of windows are already concrete.
+  if (!/[^ACGT]/.test(word)) return [word];
+
+  /* Count the realizations before building any of them, so an unusable window
+     costs a short loop rather than a large intermediate array. */
+  let variants = 1;
+  for (const code of word) {
+    const bases = IUPAC[code];
+    if (!bases) return null; // not a nucleotide code -- never seedable
+    variants *= bases.length;
+    if (variants > maxVariants) return null;
+  }
+
+  /* Build the cross product one position at a time. */
+  let words = [""];
+  for (const code of word) {
+    const bases = IUPAC[code];
+    const next = [];
+    for (const prefix of words) {
+      for (const base of bases) next.push(prefix + base);
+    }
+    words = next;
+  }
+  return words;
+}
 
 const COMPLEMENT = {
   A: "T", T: "A", U: "A", G: "C", C: "G",
@@ -138,13 +192,46 @@ const K = 16;
    than that is a BLAST question, which is where the checker sends it. */
 const SEED_STRIDE = 4;
 
+/* ---- EXPANDING AMBIGUOUS SEEDS ---------------------------------------------
+   The reasoning above is about seeds destroyed by DIFFERENCES, and it is correct
+   about those. Ambiguity codes destroy seeds by a different mechanism: they are
+   excluded from the index and from seeding outright, because they cannot be
+   matched as exact letters. An ambiguity code every s positions leaves clean
+   runs of exactly s - 1 bases, so at s <= 16 a K = 16 seed has nowhere to sit
+   and NOT ONE seed survives anywhere in the query.
+
+   That was measured (malavi_sanger, METHODS_draft.md 5H.2): with an N every
+   17 bp all 60 test queries were named correctly; with an N every 16 bp all 60
+   returned "no close match" while a position-wise comparison named the source
+   lineage from a median of 478 informative positions. An N every 16 bp is 30
+   ambiguous calls in 479 bp -- a mediocre but ordinary Sanger trace. One base of
+   spacing separated full function from total failure, with no warning.
+
+   Two changes remove that cliff:
+     1. Ambiguous query windows are expanded into their concrete realizations and
+        each is looked up (expandSeedWord). One N per window costs 4 lookups, so
+        the s = 16 case seeds normally again, and spacings below it degrade
+        gradually instead of falling off an edge.
+     2. When a query really is too ambiguous to seed at all, checkSequence says
+        exactly that rather than asserting that no lineage matches -- because
+        that assertion was false.
+   Only query-side seeding changed; the reference index is built as before. */
+
 export function buildIndex(payload) {
-  const entries = payload.entries.map((e) => ({
-    ...e,
+  const entries = payload.entries.map((e) => {
     // Gaps are alignment padding, not biology. Comparison happens on the
     // ungapped string, with the gapped original kept for display.
-    ungapped: e.seq.replace(/-/g, "")
-  }));
+    const ungapped = e.seq.replace(/-/g, "");
+    return {
+      ...e,
+      ungapped,
+      /* Whether this reference carries an ambiguity code, computed once here so
+         the exact scan can route each reference to the right comparison: 191 of
+         the 5,359 entries in the 2026-03-23 release do, and only those need the
+         slower compatibility-aware containment test. */
+      hasAmbiguity: /[^ACGT]/.test(ungapped)
+    };
+  });
 
   /* References are indexed at every position; only the QUERY is strided. That
      way a seed taken at any query offset still finds its reference, whatever
@@ -221,6 +308,68 @@ function dedupeByEntry(candidates) {
 }
 
 /**
+ * Where does `inner` sit inside `outer`, comparing by IUPAC base set rather than
+ * by letter? Returns the first such offset, or -1 if there is none.
+ *
+ * `ambiguous` says whether either string can carry a code outside A/C/G/T. When
+ * neither does -- true for 5,168 of the 5,359 references, against a concrete
+ * query -- set containment and literal containment are the same question, and
+ * the engine's own substring search answers it far faster than a JS loop.
+ *
+ * This matters because the letter-wise test alone was wrong: a reference with an
+ * N where the submitter has a real base is the submitter's OWN lineage, and
+ * `includes()` cannot see it. See findMatches's exact path.
+ */
+export function containmentOffset(outer, inner, ambiguous) {
+  if (inner.length > outer.length) return -1;
+  if (!ambiguous) return outer.indexOf(inner);
+
+  const lastOffset = outer.length - inner.length;
+  for (let offset = 0; offset <= lastOffset; offset++) {
+    let matches = true;
+    for (let i = 0; i < inner.length; i++) {
+      const a = inner[i];
+      const b = outer[i + offset];
+      /* A character that is not a nucleotide code is not "compatible with
+         everything" -- it cannot be part of an exact match at all. */
+      if (!IUPAC[a] || !IUPAC[b] || !COMPATIBLE[a][b]) {
+        matches = false;
+        break;
+      }
+    }
+    if (matches) return offset;
+  }
+  return -1;
+}
+
+/**
+ * How many of the seed windows a query would sample can actually be used.
+ *
+ * Reported for the better of the two orientations, since findMatches tries both.
+ * This exists so that "we found nothing" can be told apart from "we could not
+ * look" -- the difference between a sequence that is genuinely unlike anything in
+ * MalAvi and one that is simply too ambiguous for an exact-word index. Only
+ * called when a query fails to match, so it costs nothing in the normal case.
+ */
+export function countUsableSeeds(sequence) {
+  const cleaned = sequence.replace(/-/g, "");
+
+  const countOneOrientation = (query) => {
+    let sampled = 0;
+    let usable = 0;
+    for (let pos = 0; pos + K <= query.length; pos += SEED_STRIDE) {
+      sampled++;
+      if (expandSeedWord(query.substr(pos, K))) usable++;
+    }
+    return { sampled, usable };
+  };
+
+  const forward = countOneOrientation(cleaned);
+  const reverse = countOneOrientation(reverseComplement(cleaned));
+  return forward.usable >= reverse.usable ? forward : reverse;
+}
+
+/**
  * Find the best-matching reference lineages for a query.
  *
  * Tries the query in both orientations. Returns every reference tied at the
@@ -265,14 +414,32 @@ export function findMatches(index, querySequence, { maxCandidates = 400 } = {}) 
         // Either the query sits inside the reference (a truncated submission)
         // or the reference sits inside the query (the submitter sequenced more
         // than the barcode window). Both are exact matches.
-        if (reference.includes(query) || query.includes(reference)) {
+        //
+        // Containment is judged by base set, not by letter. Using `includes()`
+        // alone made the short-circuit below unsound: it missed every reference
+        // carrying an ambiguity code where the query has a concrete base, and
+        // then returned some OTHER lineage that happened to contain the query
+        // literally. That produced 19 confidently mis-named queries in the
+        // 2026-08-02 sweep -- "Already in MalAvi -- this is X", with the
+        // submitter's actual lineage not among the names shown
+        // (METHODS_draft.md 5H.5). The set-wise test makes `perfect` the
+        // complete equivalence class, which is what the short-circuit assumes.
+        const queryInside = containmentOffset(reference, query, entry.hasAmbiguity);
+        const referenceInside =
+          queryInside < 0 ? containmentOffset(query, reference, entry.hasAmbiguity) : -1;
+        if (queryInside >= 0 || referenceInside >= 0) {
+          /* Score the hit with the same function every other candidate goes
+             through, at the offset where it was found (negative when the
+             reference sits inside the query). That keeps `compared`,
+             `differences` and `ambiguousSites` consistent across both paths --
+             `better()` compares candidates from each -- and reports the
+             ambiguous sites honestly instead of assuming an exact match has
+             none, which stopped being true once containment became set-wise. */
+          const offset = queryInside >= 0 ? queryInside : -referenceInside;
           exactCandidates.push({
             entry,
             orientation,
-            differences: 0,
-            compared: Math.min(query.length, reference.length),
-            ambiguousSites: 0,
-            offset: 0
+            ...compareAtOffset(query, reference, offset)
           });
         }
       }
@@ -284,7 +451,13 @@ export function findMatches(index, querySequence, { maxCandidates = 400 } = {}) 
      never exceed the query length -- so skipping the search is provably safe
      rather than merely quick. This is the common case: someone pasting a
      sequence straight out of MalAvi or GenBank. */
-  const perfect = exactCandidates.filter((c) => c.compared === cleanedQuery.length);
+  /* `differences === 0` is guaranteed by how these candidates were found -- they
+     are scored at an offset already shown to be compatible at every position --
+     but it is asserted rather than assumed, because the whole soundness of
+     returning early rests on it. */
+  const perfect = exactCandidates.filter(
+    (c) => c.compared === cleanedQuery.length && c.differences === 0
+  );
   if (perfect.length) {
     const ties = dedupeByEntry(perfect);
     return {
@@ -307,29 +480,67 @@ export function findMatches(index, querySequence, { maxCandidates = 400 } = {}) 
   ]) {
     /* Seed: collect votes for (reference, offset) pairs from shared k-mers.
        A vote means "this reference lines up with the query at this offset". */
+    /* Each candidate carries two vote counts, because expanded seeds and
+       concrete seeds have to be ranked separately -- see THE TWO RANKINGS. */
     const votes = new Map();
     for (let pos = 0; pos + K <= query.length; pos += SEED_STRIDE) {
+      /* An ambiguous window is expanded into the concrete words it could be and
+         all of them are looked up, instead of the window being discarded. Two
+         realizations of one window can never match the same reference position,
+         so a window still contributes at most one vote per (reference, offset)
+         and the vote counts keep meaning "how many sampled windows agree". */
       const word = query.substr(pos, K);
-      if (/[^ACGT]/.test(word)) continue;
-      const bucket = index.kmers.get(word);
-      if (!bucket) continue;
-      for (const hit of bucket) {
-        // offset = where query position 0 sits inside the reference
-        const offset = hit.pos - pos;
-        const key = hit.entryIndex + ":" + offset;
-        votes.set(key, (votes.get(key) || 0) + 1);
+      const words = expandSeedWord(word);
+      if (!words) continue;
+      const isConcrete = words.length === 1 && words[0] === word;
+      for (const realization of words) {
+        const bucket = index.kmers.get(realization);
+        if (!bucket) continue;
+        for (const hit of bucket) {
+          // offset = where query position 0 sits inside the reference
+          const offset = hit.pos - pos;
+          const key = hit.entryIndex + ":" + offset;
+          let tally = votes.get(key);
+          if (!tally) votes.set(key, (tally = { total: 0, concrete: 0 }));
+          tally.total++;
+          if (isConcrete) tally.concrete++;
+        }
       }
     }
     if (votes.size === 0) continue;
 
-    /* Extend: score the best-supported candidates exactly. Sorting by vote
-       count first means the true match is scored early; the cap only ever
-       discards candidates that shared fewer exact words than 400 others. */
-    const ranked = [...votes.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, maxCandidates);
+    /* ---- THE TWO RANKINGS ---------------------------------------------------
+       Extend: score the best-supported candidates exactly. Sorting by vote count
+       first means the true match is scored early; the cap only ever discards
+       candidates that shared fewer exact words than 400 others.
 
-    for (const [key] of ranked) {
+       Two rankings are taken and their union scored, because expanded seeds
+       systematically DISADVANTAGE one particular candidate: the reference the
+       query actually came from, when the query carries ambiguity codes of its
+       own. The index holds no word containing an ambiguity code, so at exactly
+       the windows where the query is ambiguous its own source cannot be voted
+       for -- while every other reference, which has concrete bases there, can be.
+       Ranking on expanded votes alone therefore pushed real sources (RBQ15,
+       RBQ18, RBQ19 and others) out of the top 400 and reported near-misses
+       instead.
+
+       Ranking by concrete votes alone is exactly what this module did before
+       expansion existed, and that ranking recognised every sequence in the
+       release. So it is kept as a floor: whatever the old seeding would have
+       scored is still scored, and expansion only ever ADDS candidates. */
+    const rankedKeys = new Set();
+    for (const [property, eligible] of [
+      ["total", () => true],
+      ["concrete", (tally) => tally.concrete > 0]
+    ]) {
+      const ranking = [...votes.entries()]
+        .filter(([, tally]) => eligible(tally))
+        .sort((a, b) => b[1][property] - a[1][property])
+        .slice(0, maxCandidates);
+      for (const [key] of ranking) rankedKeys.add(key);
+    }
+
+    for (const key of rankedKeys) {
       const sep = key.lastIndexOf(":");
       const entryIndex = Number(key.slice(0, sep));
       const offset = Number(key.slice(sep + 1));
@@ -442,6 +653,42 @@ export function checkSequence(index, raw) {
   const match = findMatches(index, sequence);
 
   if (!match) {
+    /* Distinguish "we found nothing" from "we could not look". A query with an
+       ambiguity code in every 16 bp window leaves the exact-word index with
+       nothing to seed from, and the old copy below then told the submitter their
+       sequence was probably very divergent or not cytochrome b at all -- a
+       confident claim the checker had no evidence for, and one that was
+       measurably false: these sequences were named lineages
+       (METHODS_draft.md 5H.2). Expanded seeds handle the ordinary degraded read;
+       when even that is not enough, say so plainly.
+
+       Only for input that is actually nucleotide sequence: something with
+       non-nucleotide characters in it (protein, pasted prose) also has no usable
+       seeds, but "too ambiguous" is the wrong explanation for it -- the Content
+       check above has already said the right one. */
+    const seeds = countUsableSeeds(sequence);
+    if (content.invalid === 0 && seeds.sampled > 0 && seeds.usable === 0) {
+      checks.push({
+        state: "fail",
+        label: "Identity",
+        text:
+          "Not checked — every part of this sequence carries too many ambiguous " +
+          "positions for the quick comparison. This is not evidence either way."
+      });
+      return {
+        verdict: "unknown",
+        title: "Too ambiguous to check here",
+        message:
+          "The ambiguous positions are spread so evenly that no stretch of this " +
+          "sequence is definite enough for the quick check to use. That says nothing " +
+          "about whether it is new — it may well be a named lineage. Re-check the " +
+          "trace if you can, run it through BLAST, and send it to us either way.",
+        content,
+        match: null,
+        checks
+      };
+    }
+
     checks.push({
       state: "warn",
       label: "Identity",
