@@ -259,6 +259,13 @@ tbody tr:hover td { background:var(--surface-2); }
 td.key { font-family: ui-monospace, Menlo, Consolas, monospace; color:var(--ink); font-weight:600; }
 td.num { text-align:right; font-variant-numeric:tabular-nums; }
 td.wrap { white-space:normal; min-width:280px; }
+/* A cytochrome b sequence is ~479 characters. Left on one line it would make the
+   Grand Lineage Summary scroll sideways for a screen and a half, so it wraps
+   inside a capped column and breaks between bases rather than at spaces (there
+   are none). Monospace so the bases line up down the rows. */
+td.seq { font-family: ui-monospace, Menlo, Consolas, monospace; font-size:11px;
+  line-height:1.5; white-space:normal; overflow-wrap:anywhere; word-break:break-all;
+  min-width:300px; max-width:380px; color:var(--ink-3); }
 .genus-pill { display:inline-flex; align-items:center; gap:6px; }
 .genus-pill i { width:8px; height:8px; border-radius:2px; flex:none; }
 .empty { padding:28px; text-align:center; color:var(--ink-3); }

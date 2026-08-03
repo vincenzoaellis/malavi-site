@@ -192,6 +192,32 @@ const K = 16;
    than that is a BLAST question, which is where the checker sends it. */
 const SEED_STRIDE = 4;
 
+/* ---- CORROBORATION REQUIRED OF AN EXACT MATCH -------------------------------
+   containmentOffset() calls an alignment exact when every overlapping position
+   is COMPATIBLE. Compatible is not the same as observed: N is compatible with
+   every base, so a query shorter than a reference's run of ambiguity codes
+   slides wholesale into that run and comes back "0 differences over its whole
+   length" having been told nothing at all. BUTJAM13 carries 175 N of 479 bp,
+   and that one reference tied with the genuine match for 149 of 150 measured
+   150 bp queries (malavi_sanger, METHODS_draft.md 5H.8).
+
+   So an exact alignment must additionally be CORROBORATED: it must contain at
+   least one unbroken stretch of positions where both sides are a single
+   concrete base and they agree.
+
+   K is reused as that length rather than a new number being invented. It is
+   already this module's standard for "a stretch long enough to nominate a
+   candidate" -- the seeded path accepts nothing shorter -- so the exact path is
+   now held to the same evidentiary bar, by construction rather than by
+   coincidence.
+
+   Measured separation in the 2026-03-23 release: every genuine member of a
+   reported equivalence class scores at least 25, because 25 is the shortest
+   concrete run any of the 191 ambiguity-carrying references has anywhere; every
+   wildcard match scores 0 to 2. No reference in the release can be excluded by
+   this test at its own true offset. */
+const EXACT_MATCH_CORROBORATION = K;
+
 /* ---- EXPANDING AMBIGUOUS SEEDS ---------------------------------------------
    The reasoning above is about seeds destroyed by DIFFERENCES, and it is correct
    about those. Ambiguity codes destroy seeds by a different mechanism: they are
@@ -274,6 +300,18 @@ export function compareAtOffset(query, reference, offset) {
   let differences = 0;
   let compared = 0;
   let ambiguousSites = 0;
+  /* Positions where BOTH sides are a single concrete base. These are the only
+     positions that carry POSITIVE evidence about which lineage this is:
+     agreement at a position where either side is unresolved is a
+     non-contradiction, not an observation, and conflating the two is what let a
+     mostly-N reference pass for a match (see EXACT_MATCH_CORROBORATION). */
+  let jointlyInformative = 0;
+  /* The longest unbroken stretch of those positions on which the two sides also
+     AGREE. A bare count cannot tell "corroborated by one solid stretch" apart
+     from "one base here, one base there", and it is the stretch that decides
+     whether an alignment was found on evidence. */
+  let longestConcreteAgreement = 0;
+  let currentAgreementRun = 0;
 
   for (let i = start; i < end; i++) {
     const q = query[i];
@@ -281,16 +319,43 @@ export function compareAtOffset(query, reference, offset) {
     const qSet = IUPAC[q];
     const rSet = IUPAC[r];
     // A gap on either side is alignment padding; skip it entirely rather than
-    // scoring it, and do not count it toward the compared length.
-    if (!qSet || !rSet) continue;
+    // scoring it, and do not count it toward the compared length. It also
+    // breaks the agreement run, because a run has to be contiguous to mean
+    // anything.
+    if (!qSet || !rSet) {
+      currentAgreementRun = 0;
+      continue;
+    }
     compared++;
-    if (COMPATIBLE[q][r]) {
-      if (qSet.length > 1 || rSet.length > 1) ambiguousSites++;
-    } else {
+
+    const bothConcrete = qSet.length === 1 && rSet.length === 1;
+    if (bothConcrete) jointlyInformative++;
+
+    if (!COMPATIBLE[q][r]) {
       differences++;
+      currentAgreementRun = 0;
+      continue;
+    }
+    if (!bothConcrete) {
+      // Compatible, but only because at least one side is unresolved.
+      ambiguousSites++;
+      currentAgreementRun = 0;
+      continue;
+    }
+    // Two concrete bases, compatible -- therefore identical. Real evidence.
+    currentAgreementRun++;
+    if (currentAgreementRun > longestConcreteAgreement) {
+      longestConcreteAgreement = currentAgreementRun;
     }
   }
-  return { differences, compared, ambiguousSites, offset };
+  return {
+    differences,
+    compared,
+    ambiguousSites,
+    jointlyInformative,
+    longestConcreteAgreement,
+    offset
+  };
 }
 
 /** Keep one candidate per reference entry, preserving order. A candidate can be
@@ -319,25 +384,51 @@ function dedupeByEntry(candidates) {
  * This matters because the letter-wise test alone was wrong: a reference with an
  * N where the submitter has a real base is the submitter's OWN lineage, and
  * `includes()` cannot see it. See findMatches's exact path.
+ *
+ * `minAgreementRun` is the corroboration requirement (EXACT_MATCH_CORROBORATION):
+ * an accepted offset must also carry an unbroken run of at least this many
+ * positions where both sides are a single concrete base and agree. It is tested
+ * INSIDE the scan rather than applied afterwards to the returned offset, because
+ * a reference can contain the query at more than one offset -- and if an
+ * uninformative one came first, filtering afterwards would throw away a genuine
+ * match sitting further along. Default 0 preserves the plain containment
+ * question for callers that only want that.
  */
-export function containmentOffset(outer, inner, ambiguous) {
+export function containmentOffset(outer, inner, ambiguous, minAgreementRun = 0) {
   if (inner.length > outer.length) return -1;
-  if (!ambiguous) return outer.indexOf(inner);
+  if (!ambiguous) {
+    /* Neither string carries a code outside A/C/G/T, so every position of a
+       literal containment is two concrete bases in agreement: the run is the
+       whole of `inner`, and the requirement reduces to a length test. */
+    if (inner.length < minAgreementRun) return -1;
+    return outer.indexOf(inner);
+  }
 
   const lastOffset = outer.length - inner.length;
   for (let offset = 0; offset <= lastOffset; offset++) {
     let matches = true;
+    let currentRun = 0;
+    let longestRun = 0;
     for (let i = 0; i < inner.length; i++) {
       const a = inner[i];
       const b = outer[i + offset];
+      const aSet = IUPAC[a];
+      const bSet = IUPAC[b];
       /* A character that is not a nucleotide code is not "compatible with
          everything" -- it cannot be part of an exact match at all. */
-      if (!IUPAC[a] || !IUPAC[b] || !COMPATIBLE[a][b]) {
+      if (!aSet || !bSet || !COMPATIBLE[a][b]) {
         matches = false;
         break;
       }
+      if (aSet.length === 1 && bSet.length === 1) {
+        currentRun++;
+        if (currentRun > longestRun) longestRun = currentRun;
+      } else {
+        // Compatible only because one side is unresolved: no evidence here.
+        currentRun = 0;
+      }
     }
-    if (matches) return offset;
+    if (matches && longestRun >= minAgreementRun) return offset;
   }
   return -1;
 }
@@ -424,9 +515,18 @@ export function findMatches(index, querySequence, { maxCandidates = 400 } = {}) 
         // submitter's actual lineage not among the names shown
         // (METHODS_draft.md 5H.5). The set-wise test makes `perfect` the
         // complete equivalence class, which is what the short-circuit assumes.
-        const queryInside = containmentOffset(reference, query, entry.hasAmbiguity);
+        //
+        // Set-wise containment on its own over-shoots in the other direction --
+        // a mostly-N reference absorbs any short query -- so the offset must
+        // also be corroborated by a real stretch of agreeing concrete bases.
+        // See EXACT_MATCH_CORROBORATION.
+        const queryInside = containmentOffset(
+          reference, query, entry.hasAmbiguity, EXACT_MATCH_CORROBORATION
+        );
         const referenceInside =
-          queryInside < 0 ? containmentOffset(query, reference, entry.hasAmbiguity) : -1;
+          queryInside < 0
+            ? containmentOffset(query, reference, entry.hasAmbiguity, EXACT_MATCH_CORROBORATION)
+            : -1;
         if (queryInside >= 0 || referenceInside >= 0) {
           /* Score the hit with the same function every other candidate goes
              through, at the offset where it was found (negative when the

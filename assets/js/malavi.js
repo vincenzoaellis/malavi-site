@@ -27,9 +27,14 @@ const feed = (url) => fetch(url, REVALIDATE).then((r) => r.json());
 const optional = (url) =>
   fetch(url, REVALIDATE).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
-const [STATS, DATA, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.all([
+/* TABLE_INDEX carries only each table's column spec and row count -- a few KB.
+   The rows themselves live in one file per table under assets/data/tables/ and
+   are fetched when a visitor actually opens that table, so nobody downloads the
+   4 MB hosts table to read the home page. Both are written by
+   export/build_tables_json.R. */
+const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.all([
   feed("assets/data/site_stats.json"),
-  feed("assets/data/tables_preview.json"),
+  feed("assets/data/tables_index.json"),
   feed("assets/data/world_map.json"),
   feed("assets/data/reports.json"),
   optional("assets/data/queue.json"),
@@ -41,8 +46,8 @@ const [STATS, DATA, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.all([
   /* STATS is the verbatim output of export/build_site_stats.R, which derives every
      figure below from the pinned malaviR release. Nothing on this page is typed in:
      bump the release, re-run the generator, and the whole site follows.
-     DATA carries the table rows; MAP carries the fixed basemap shapes and the
-     MalAvi-name -> basemap-name aliases. */
+     TABLE_INDEX carries the table column specs; MAP carries the fixed basemap
+     shapes and the MalAvi-name -> basemap-name aliases. */
 
   /* ------------------------------------------------------------------ theme */
   var root = document.documentElement;
@@ -296,14 +301,14 @@ const [STATS, DATA, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.all([
   }
 
   /* The table list is driven by STATS.tables -- title, description and row count
-     all come from the release. DATA supplies only the column spec and the sample
-     rows this preview renders; in the live site those come from the exported
-     per-table JSON. */
+     all come from the release. TABLE_INDEX supplies the column spec. `rows`
+     starts null and is filled in by fetchRows() the first time the table is
+     opened; see openTable(). */
   var TABLES = STATS.tables.map(function (meta) {
-    var payload = DATA.tables[meta.id] || { columns: [], rows: [] };
+    var spec = TABLE_INDEX.tables[meta.id] || { columns: [] };
     return {
       id: meta.id, title: meta.title, description: meta.description,
-      totalRows: meta.rows, columns: payload.columns, rows: payload.rows
+      totalRows: meta.rows, columns: spec.columns, rows: null
     };
   }).filter(function (t) { return t.columns.length; });
 
@@ -404,34 +409,78 @@ const [STATS, DATA, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.all([
   });
 
   /* ------------------------------------------------------------ table view */
-  var state = { table: null, page: 0, size: 25, filters: {} };
+  /* colIndex maps a column's key to its position in a row array; buildHead()
+     rebuilds it whenever a table is opened. */
+  var state = { table: null, page: 0, size: 25, filters: {}, colIndex: {} };
   var indexEl = document.getElementById("tablesIndex");
   var viewEl = document.getElementById("tableView");
 
+  /* A table's rows are fetched once per page load and then kept, so paging back
+     and forth between tables costs one download each and no more. */
+  function fetchRows(table) {
+    if (table.rows) return Promise.resolve(table.rows);
+    return fetch("assets/data/tables/" + table.id + ".json", REVALIDATE)
+      .then(function (r) {
+        if (!r.ok) throw new Error("could not load the " + table.title + " table");
+        return r.json();
+      })
+      .then(function (payload) {
+        table.rows = payload.rows;
+        return table.rows;
+      });
+  }
+
+  /* One full-width message in the table body: used while a table downloads and
+     if the download fails. */
+  function tableMessage(text) {
+    document.getElementById("tvBody").innerHTML =
+      '<tr><td class="empty" colspan="' + state.table.columns.length + '">' +
+      escapeHtml(text) + "</td></tr>";
+  }
+
   function openTable(id) {
-    state.table = TABLES.filter(function (t) { return t.id === id; })[0];
-    if (!state.table) return;
+    var table = TABLES.filter(function (t) { return t.id === id; })[0];
+    if (!table) return;
+    state.table = table;
     state.page = 0;
     state.filters = {};
-    document.getElementById("tvTitle").textContent = state.table.title;
-    document.getElementById("tvDesc").textContent = state.table.description;
+    document.getElementById("tvTitle").textContent = table.title;
+    document.getElementById("tvDesc").textContent = table.description;
     document.getElementById("tvNote").textContent =
-      "Showing " + n(state.table.rows.length) + " sample rows of " +
-      n(state.table.totalRows) + " for this preview. The live table carries all of them.";
-    /* Point the two download buttons at this table's generated files. The page
-       only holds a preview, so these must serve the complete table, not what is
-       currently filtered on screen. */
-    document.getElementById("dlCsv").href  = tableDownloadHref(state.table.id, "csv");
-    document.getElementById("dlXlsx").href = tableDownloadHref(state.table.id, "xlsx");
+      "All " + n(table.totalRows) + " rows of this table, from release " + RELEASE +
+      ", are searched here — the column filters look at every row, not only the " +
+      "page on screen.";
+    /* Point the two download buttons at this table's generated files. These
+       serve the complete table, not what is currently filtered on screen. */
+    document.getElementById("dlCsv").href  = tableDownloadHref(table.id, "csv");
+    document.getElementById("dlXlsx").href = tableDownloadHref(table.id, "xlsx");
     buildHead();
-    render();
+
+    /* Show the table view straight away so the click feels immediate, then fill
+       in the body once the rows arrive. */
     indexEl.style.display = "none";
     viewEl.style.display = "";
     window.scrollTo({ top: 0, behavior: "instant" });
+
+    if (table.rows) { render(); return; }
+    tableMessage("Loading " + n(table.totalRows) + " rows…");
+    document.getElementById("tvCount").textContent = "";
+    fetchRows(table).then(function () {
+      /* The visitor may have opened a different table while this one was in
+         flight; only draw if this is still the one on screen. */
+      if (state.table === table) render();
+    }).catch(function (err) {
+      if (state.table === table) tableMessage(err.message + ". Reload the page to try again.");
+    });
   }
 
   function buildHead() {
     var cols = state.table.columns;
+    /* A row is an array of cells in column order, so a filter keyed by column
+       has to know that column's position. Built once per table rather than
+       looked up per cell on every keystroke. */
+    state.colIndex = {};
+    cols.forEach(function (c, i) { state.colIndex[c.key] = i; });
     document.getElementById("tvHead").innerHTML =
       "<tr>" + cols.map(function (c) { return "<th>" + escapeHtml(c.label) + "</th>"; }).join("") + "</tr>" +
       '<tr class="colfilters">' + cols.map(function (c) {
@@ -440,25 +489,29 @@ const [STATS, DATA, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.all([
       }).join("") + "</tr>";
   }
 
+  /* Empty until the table's rows have downloaded; every caller treats that as
+     "no rows yet" rather than failing. */
   function filteredRows() {
+    var rows = state.table.rows || [];
     var active = Object.keys(state.filters).filter(function (k) { return state.filters[k]; });
-    if (!active.length) return state.table.rows;
-    return state.table.rows.filter(function (row) {
+    if (!active.length) return rows;
+    return rows.filter(function (row) {
       return active.every(function (key) {
-        return String(row[key] == null ? "" : row[key]).toLowerCase()
-          .indexOf(state.filters[key]) !== -1;
+        var v = row[state.colIndex[key]];
+        return String(v == null ? "" : v).toLowerCase().indexOf(state.filters[key]) !== -1;
       });
     });
   }
 
-  function cellHtml(col, row) {
-    var v = row[col.key];
+  function cellHtml(col, i, row) {
+    var v = row[i];
     if (col.type === "genus") {
       return '<td><span class="genus-pill"><i class="' + (GENUS_CLASS[v] || "") + '"></i>' +
              escapeHtml(v) + "</span></td>";
     }
     var cls = col.type === "key" ? "key" : col.type === "num" ? "num"
-            : col.type === "wrap" ? "wrap" : col.type === "sci" ? "sci" : "";
+            : col.type === "wrap" ? "wrap" : col.type === "sci" ? "sci"
+            : col.type === "seq" ? "seq" : "";
     return "<td" + (cls ? ' class="' + cls + '"' : "") + ">" + escapeHtml(v) + "</td>";
   }
 
@@ -471,6 +524,11 @@ const [STATS, DATA, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.all([
   }
 
   function render() {
+    /* The rows are still downloading. tableMessage() owns the table body until
+       they land, and openTable() re-renders once they do -- including any
+       filters typed while waiting. */
+    if (!state.table || !state.table.rows) return;
+
     var cols = state.table.columns;
     var rows = filteredRows();
     var totalPages = Math.ceil(rows.length / state.size) || 1;
@@ -480,7 +538,7 @@ const [STATS, DATA, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.all([
 
     document.getElementById("tvBody").innerHTML = slice.length
       ? slice.map(function (row) {
-          return "<tr>" + cols.map(function (c) { return cellHtml(c, row); }).join("") + "</tr>";
+          return "<tr>" + cols.map(function (c, i) { return cellHtml(c, i, row); }).join("") + "</tr>";
         }).join("")
       : '<tr><td class="empty" colspan="' + cols.length +
         '">No rows match those filters. Clear one to widen the search.</td></tr>';
