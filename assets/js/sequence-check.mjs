@@ -625,7 +625,7 @@ export function findMatches(index, querySequence, { maxCandidates = 400 } = {}) 
        instead.
 
        Ranking by concrete votes alone is exactly what this module did before
-       expansion existed, and that ranking recognised every sequence in the
+       expansion existed, and that ranking recognized every sequence in the
        release. So it is kept as a floor: whatever the old seeding would have
        scored is still scored, and expansion only ever ADDS candidates. */
     const rankedKeys = new Set();

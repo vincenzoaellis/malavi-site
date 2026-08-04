@@ -1,6 +1,6 @@
 {
   "release": "2026-03-23",
-  "generated": "2026-07-28T02:06:33Z",
+  "generated": "2026-08-04T17:13:45Z",
   "malaviR_bundled": "2026-03-23",
   "alignment_length_bp": 479,
   "totals": {
@@ -27,7 +27,11 @@
       "host_families": 116,
       "host_orders": 31,
       "countries": 107,
-      "studies": 401
+      "studies": 401,
+      "map_countries": 107,
+      "map_countries_shown": 91,
+      "map_studies": 423,
+      "map_studies_shown": 422
     },
     {
       "key": "Haemoproteus",
@@ -38,7 +42,11 @@
       "host_families": 119,
       "host_orders": 25,
       "countries": 109,
-      "studies": 377
+      "studies": 377,
+      "map_countries": 109,
+      "map_countries_shown": 92,
+      "map_studies": 393,
+      "map_studies_shown": 390
     },
     {
       "key": "Leucocytozoon",
@@ -49,7 +57,11 @@
       "host_families": 92,
       "host_orders": 23,
       "countries": 72,
-      "studies": 204
+      "studies": 204,
+      "map_countries": 72,
+      "map_countries_shown": 67,
+      "map_studies": 213,
+      "map_studies_shown": 213
     }
   ],
   "genus_order": ["Plasmodium", "Haemoproteus", "Leucocytozoon"],
@@ -82,9 +94,9 @@
       "L": 1
     },
     "Austria": {
-      "P": 7,
+      "P": 8,
       "H": 7,
-      "L": 6
+      "L": 7
     },
     "Azerbaijan": {
       "H": 1,
@@ -125,18 +137,18 @@
       "L": 1
     },
     "Brazil": {
-      "P": 39,
-      "H": 24,
+      "P": 41,
+      "H": 26,
       "L": 4
     },
     "Bulgaria": {
       "P": 12,
-      "H": 14,
+      "H": 15,
       "L": 3
     },
     "Cameroon": {
-      "P": 10,
-      "H": 8,
+      "P": 12,
+      "H": 10,
       "L": 4
     },
     "Canada": {
@@ -180,9 +192,9 @@
       "L": 2
     },
     "Czech Republic": {
-      "P": 9,
-      "H": 5,
-      "L": 5
+      "P": 10,
+      "H": 6,
+      "L": 6
     },
     "Denmark": {
       "H": 1
@@ -196,7 +208,7 @@
     },
     "Ecuador": {
       "P": 6,
-      "H": 11,
+      "H": 12,
       "L": 1
     },
     "Egypt": {
@@ -220,8 +232,8 @@
       "H": 3
     },
     "France": {
-      "P": 13,
-      "H": 11,
+      "P": 14,
+      "H": 12,
       "L": 2
     },
     "French Polynesia": {
@@ -235,7 +247,7 @@
     "Germany": {
       "P": 14,
       "H": 18,
-      "L": 11
+      "L": 12
     },
     "Ghana": {
       "P": 5,
@@ -286,14 +298,14 @@
       "L": 1
     },
     "Italy": {
-      "P": 10,
+      "P": 11,
       "H": 9,
       "L": 7
     },
     "Japan": {
-      "P": 22,
-      "H": 15,
-      "L": 11
+      "P": 28,
+      "H": 18,
+      "L": 12
     },
     "Kazakhstan": {
       "P": 1,
@@ -317,8 +329,8 @@
       "H": 2
     },
     "Lithuania": {
-      "P": 13,
-      "H": 16,
+      "P": 16,
+      "H": 19,
       "L": 11
     },
     "Madagascar": {
@@ -357,8 +369,8 @@
       "L": 1
     },
     "Mexico": {
-      "P": 6,
-      "H": 10,
+      "P": 9,
+      "H": 11,
       "L": 2
     },
     "Mongolia": {
@@ -443,7 +455,7 @@
       "L": 5
     },
     "Portugal": {
-      "P": 11,
+      "P": 12,
       "H": 5,
       "L": 8
     },
@@ -458,7 +470,7 @@
     },
     "Russia": {
       "P": 20,
-      "H": 18,
+      "H": 19,
       "L": 5
     },
     "Rwanda": {
@@ -500,8 +512,8 @@
       "L": 4
     },
     "Spain": {
-      "P": 35,
-      "H": 34,
+      "P": 36,
+      "H": 35,
       "L": 21
     },
     "Suriname": {
@@ -513,7 +525,7 @@
       "L": 10
     },
     "Switzerland": {
-      "P": 8,
+      "P": 9,
       "H": 8,
       "L": 4
     },
@@ -524,7 +536,7 @@
     "Thailand": {
       "P": 8,
       "H": 6,
-      "L": 4
+      "L": 8
     },
     "The Bahamas": {
       "H": 1
@@ -537,9 +549,9 @@
       "H": 1
     },
     "Turkey": {
-      "P": 5,
-      "H": 8,
-      "L": 6
+      "P": 6,
+      "H": 9,
+      "L": 7
     },
     "Uganda": {
       "P": 2,
@@ -557,9 +569,9 @@
       "L": 3
     },
     "United States": {
-      "P": 58,
+      "P": 59,
       "H": 60,
-      "L": 44
+      "L": 45
     },
     "Uruguay": {
       "P": 2,
@@ -591,6 +603,8 @@
     }
   },
   "countries_unplaced": ["Antigua and Barbuda", "Ascension Island", "Bermuda", "Cape Verde", "Cayman Islands", "Christmas Island", "Comoros", "Dominica", "French Polynesia", "Grenada", "Guadeloupe", "Malta", "Martinique", "Mauritius", "Mayotte", "Montserrat", "Netherlands Antilles", "Northern Mariana Islands", "Réunion", "Saint Lucia", "São Tomé and Príncipe", "Seychelles", "Singapore"],
+  "map_studies": 564,
+  "map_studies_shown": 561,
   "tables": [
     {
       "id": "hosts_and_sites",
@@ -638,6 +652,8 @@
     "cited_but_not_in_refs": 63,
     "in_refs_but_never_cited": 56,
     "host_records_missing_ref": 6,
-    "host_records_unknown_country": 60
+    "host_records_unknown_country": 60,
+    "vector_records_unknown_country": 0,
+    "vector_records_no_genus": 0
   }
 }

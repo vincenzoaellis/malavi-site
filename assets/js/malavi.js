@@ -109,7 +109,11 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
       key: g.key, varName: slot.varName, ramp: slot.ramp, cls: slot.cls,
       lineages: g.lineages, records: g.records,
       host_species: g.host_species, host_genera: g.host_genera,
-      host_families: g.host_families, host_orders: g.host_orders
+      host_families: g.host_families, host_orders: g.host_orders,
+      /* Map coverage: countries with records of this genus, and how many of them
+         the basemap has a shape for. Both come from the payload -- counting the
+         shapes that happened to get shaded would report only the second. */
+      map_countries: g.map_countries, map_countries_shown: g.map_countries_shown
     };
   });
   var TOTAL_LINEAGES = STATS.totals.lineages;
@@ -124,7 +128,11 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
       unassigned: n(STATS.unassigned_lineages),
       alnlen:    n(STATS.alignment_length_bp),
       mapped:    n(mapped),
-      unplaced:  n(unplaced)
+      unplaced:  n(unplaced),
+      /* Studies reported only from countries the basemap cannot place. They are
+         in the tables but on no panel, so the page says so rather than letting
+         them go missing quietly. */
+      offmap:    n(STATS.map_studies - STATS.map_studies_shown)
     };
     Array.prototype.forEach.call(document.querySelectorAll("[data-stat]"), function (el) {
       var v = values[el.dataset.stat];
@@ -251,10 +259,8 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
   function drawMaps() {
     document.getElementById("maps").innerHTML = GENERA.map(function (g) {
       var initial = g.key.charAt(0);
-      var shaded = 0;
       var paths = Object.keys(MAP.paths).map(function (name) {
         var count = (JOINED.counts[name] || {})[initial] || 0;
-        if (count) shaded++;
         var fill = count ? "var(--" + g.ramp + binFor(count) + ")" : "var(--map-none)";
         return '<path d="' + MAP.paths[name] + '" fill="' + fill +
                '" data-country="' + name + '" data-n="' + count + '"></path>';
@@ -264,7 +270,8 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
       }).join("");
       return '<div class="map-panel" data-genus="' + g.key + '">' +
         '<h4 class="sci">' + g.key + "</h4>" +
-        '<p class="cap">' + shaded + " countries with records</p>" +
+        '<p class="cap">' + n(g.map_countries) + " countries with records, " +
+          n(g.map_countries_shown) + " of them on the map</p>" +
         '<svg viewBox="0 0 ' + MAP.width + " " + MAP.height + '" role="img" aria-label="' +
           g.key + ' studies per country">' + paths + "</svg>" +
         '<div class="scale"><span>1</span>' + swatches + "<span>26+ studies</span></div>" +
