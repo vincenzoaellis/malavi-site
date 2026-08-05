@@ -147,6 +147,15 @@ p.lead { font-size:17.5px; }
   padding:22px; box-shadow:var(--shadow); }
 .card > :first-child { margin-top:0; }
 .card > :last-child { margin-bottom:0; }
+/* Known issues (About). Each entry is a short title followed by a full sentence
+   that can run to a list of lineage names, so the entries need separating from
+   one another and the title needs to read as a label rather than as the start of
+   the sentence. Bulletless: these are independent notes, not a sequence. */
+.issues { list-style:none; padding:0; margin:16px 0 0;
+  display:flex; flex-direction:column; gap:14px; }
+.issues li { border-left:2px solid var(--rule); padding-left:14px;
+  color:var(--ink-2); font-size:14.5px; line-height:1.55; max-width:74ch; }
+.issues li b { display:block; color:var(--ink); font-weight:600; margin-bottom:3px; }
 .chip { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; padding:4px 11px;
   border-radius:999px; border:1px solid var(--rule); background:var(--surface); color:var(--ink-2); }
 .dot { width:7px; height:7px; border-radius:50%; background:var(--ok); }

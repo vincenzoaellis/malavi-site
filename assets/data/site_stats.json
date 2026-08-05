@@ -1,6 +1,6 @@
 {
   "release": "2026-03-23",
-  "generated": "2026-08-04T17:13:45Z",
+  "generated": "2026-08-05T15:22:33Z",
   "malaviR_bundled": "2026-03-23",
   "alignment_length_bp": 479,
   "totals": {
@@ -655,5 +655,23 @@
     "host_records_unknown_country": 60,
     "vector_records_unknown_country": 0,
     "vector_records_no_genus": 0
-  }
+  },
+  "data_issues": [
+    {
+      "title": "Alignment genus prefix contradicts GENUS_NAME",
+      "text": "L_MEAPI23 has the Leucocytozoon prefix (L_) in the alignment, but in the Grand Lineage Summary table it is listed as Plasmodium"
+    },
+    {
+      "title": "No parasite genus listed",
+      "text": "7 lineages in the Grand Lineage Summary table do not have a parasite genus listed and are given the prefix N_ in the alignment file; lineages are: ACCNIS06, ACCNIS07, ACCNIS08, ACCNIS09, BUBT1, BUTLIV02, CIAE08"
+    },
+    {
+      "title": "One lineage listed as more than one morphospecies",
+      "text": "Lineage TUPHI01 is listed as two morphospecies, Haemoproteus minutus and H. asymmetricus"
+    },
+    {
+      "title": "Lineages in the alignment but not the table, or the reverse",
+      "text": "The following lineages are found in the alignment but not the Grand Lineage Summary Table: SETCAE02. The following lineages are found in the Grand Lineage Summary table but not the alignment: PLOCUC14, PLOCUC15, PLOCUC16, SETCAE01."
+    }
+  ]
 }

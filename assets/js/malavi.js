@@ -403,6 +403,29 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
     everythingLink.href = "assets/downloads/malavi_" + RELEASE + ".zip";
   }
 
+  /* ------------------------------------------------------ known data issues */
+  /* The About page's issues list comes from STATS.data_issues, which
+     export/build_site_stats.R captures from malaviR::malavi_issues() for the
+     pinned release. malavi_issues() re-derives each issue from the release it
+     has loaded and writes its sentence from that result, so the text here is
+     always about the release actually published -- the same guarantee every
+     other figure on this page has, and the reason none of it is typed into the
+     markup. A release with nothing recorded leaves the card hidden. */
+  (function () {
+    var card = document.getElementById("dataIssuesCard");
+    var list = document.getElementById("dataIssues");
+    if (!card || !list) return;
+
+    var issues = STATS.data_issues || [];
+    if (!issues.length) return;
+
+    list.innerHTML = issues.map(function (issue) {
+      return "<li><b>" + escapeHtml(issue.title) + "</b>" +
+             escapeHtml(issue.text) + "</li>";
+    }).join("");
+    card.hidden = false;
+  })();
+
   /* The report cards are rendered from reports.json, written by
      export/build_reports.R alongside the CSVs it generates, so the row counts
      shown here cannot drift from the files they describe. */
