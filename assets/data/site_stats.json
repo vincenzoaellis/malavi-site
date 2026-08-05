@@ -1,6 +1,6 @@
 {
   "release": "2026-03-23",
-  "generated": "2026-08-05T15:22:33Z",
+  "generated": "2026-08-05T19:35:03Z",
   "malaviR_bundled": "2026-03-23",
   "alignment_length_bp": 479,
   "totals": {
@@ -609,40 +609,57 @@
     {
       "id": "hosts_and_sites",
       "title": "Hosts and Sites",
+      "group": "release",
       "rows": 18493,
       "description": "Every record of a lineage found in a host: the host taxonomy, where it was found, prevalence where the study reported it, and the reference."
     },
     {
       "id": "grand_lineage_summary",
       "title": "Grand Lineage Summary",
+      "group": "release",
       "rows": 5368,
       "description": "One row per lineage: its GenBank accession, the morphospecies it is linked to if any, and how many host species, genera, families and orders it has been found in."
     },
     {
       "id": "references",
       "title": "Table of References",
+      "group": "release",
       "rows": 526,
       "description": "Every published paper whose records have been entered into MalAvi."
     },
     {
       "id": "morpho_species",
       "title": "Morpho Species Summary",
+      "group": "release",
       "rows": 256,
       "description": "Lineages that have been linked to a morphologically described species, with the reference for the link."
     },
     {
       "id": "vector_data",
       "title": "Vector Data",
+      "group": "release",
       "rows": 610,
       "description": "Lineages detected in arthropod vectors, the detection method, and where."
     },
     {
       "id": "lineage_names",
       "title": "Table of Lineage Names",
+      "group": "release",
       "rows": 3102,
       "description": "MalAvi lineage names against the names used in the original publications. Derived from the ALT_NAME column of the hosts table."
+    },
+    {
+      "id": "taxonomy",
+      "title": "Host taxonomy key",
+      "group": "derived",
+      "rows": 2339,
+      "description": "Every host species in MalAvi matched to the eBird/Clements name and to the tip label used in the clootl phylogeny, with the order and family that follow and how each name was matched. The two names are the same species, but a tree tip can keep an older genus placement, so the columns do not always agree."
     }
   ],
+  "taxonomy_source": {
+    "clootl_year": 2025,
+    "malaviR_version": "1.0.0"
+  },
   "integrity": {
     "grand_lineage_summary_rows": 5368,
     "grand_lineage_summary_lineages": 5367,

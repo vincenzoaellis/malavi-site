@@ -305,6 +305,25 @@ td.seq { font-family: ui-monospace, Menlo, Consolas, monospace; font-size:11px;
 .t-warn { background:var(--warn-wash); color:var(--warn); }
 .t-fail { background:var(--stop-wash); color:var(--stop); }
 
+/* ---- Naming a new lineage ----
+   Only appears under a "looks like a new lineage" result. The acronym tags reuse
+   the checklist pills, so a proposed name reads as one more line of the same
+   report rather than as a separate form. */
+/* .naming is the panel the sequence checker grows under a "new lineage" result;
+   .naming-out is the answer itself, which also stands alone in the "Check a
+   name" card. Everything about the ANSWER is keyed on .naming-out so both places
+   render identically. */
+.naming { margin-top:12px; padding:14px 16px; border:1px solid var(--rule);
+  border-radius:var(--radius); background:var(--surface-2); }
+.naming .eyebrow { margin-bottom:8px; }
+.naming input, .lookup-box input { font:inherit; font-size:14px; padding:9px 12px;
+  flex:1 1 220px; border-radius:8px; border:1px solid var(--rule);
+  background:var(--surface); color:var(--ink); }
+.fine { font-size:12.5px; color:var(--ink-3); margin:10px 0 0; max-width:none; }
+.naming-out .checklist { margin-top:10px; }
+.naming-out .checklist .tag { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing:.04em; min-width:70px; }
+
 /* ---- Submit ---- */
 .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
 .step { background:var(--surface); border:1px solid var(--rule); border-radius:var(--radius); padding:20px; }

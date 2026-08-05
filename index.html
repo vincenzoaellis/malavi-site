@@ -8,7 +8,7 @@
   haemosporidians (Plasmodium, Haemoproteus, Leucocytozoon), organized around lineages of the
   mitochondrial cytochrome b gene.">
 <link rel="icon" href="assets/img/favicon.ico">
-<link rel="stylesheet" href="assets/css/malavi.css?v=f3e88f84">
+<link rel="stylesheet" href="assets/css/malavi.css?v=03f528cc">
 </head>
 <body>
 <header class="masthead">
@@ -119,12 +119,30 @@
     <div class="stack">
       <div id="tablesIndex">
         <h2 class="section-title display">Tables</h2>
-        <p class="lead">Open a table to search it here, or download it whole. Everything comes
+        <p class="lead">Open a table to search it here, or download it whole. These come
           from release <span data-stat="release"></span>.</p>
         <div class="tindex" id="tindex" style="margin-top:20px"></div>
+        <!-- The alignment and the archive belong with the tables above: they are
+             the release too, and the archive holds exactly those tables. -->
         <div class="files" style="margin-top:18px">
           <a id="dlAlignment" download><span class="nm">Alignment</span><span class="ds"><span data-stat="alnlen"></span> bp cytochrome <em>b</em>, all lineages, aligned.</span><span class="fm">FASTA</span></a>
-          <a id="dlEverything" download><span class="nm">Everything</span><span class="ds">All tables plus the alignment, as one archive.</span><span class="fm">ZIP</span></a>
+          <a id="dlEverything" download><span class="nm">Everything</span><span class="ds">Every table above plus the alignment, as one archive.</span><span class="fm">ZIP</span></a>
+        </div>
+
+        <!-- Tables built on top of MalAvi rather than taken from it. Kept below
+             everything the release covers, with their own provenance line,
+             because they are not the release and are not versioned with it.
+             Hidden entirely when the payload carries none. -->
+        <div id="tindexDerivedBlock" style="margin-top:28px">
+          <p class="lead">Not part of the release, and not versioned with it. Host names are
+            matched against the eBird/Clements taxonomy of
+            <span data-stat="clootl_year"></span>, as bundled in
+            <a href="https://github.com/eliotmiller/clootl" target="_blank" rel="noopener">clootl</a>
+            for the McTavish et al. 2025 avian phylogeny, by malaviR
+            <span data-stat="malaviR_version"></span>. The eBird taxonomy is revised every year
+            and this key follows it, so a name here can change while the MalAvi release
+            does not.</p>
+          <div class="tindex" id="tindexDerived" style="margin-top:14px"></div>
         </div>
       </div>
 
@@ -181,24 +199,25 @@
         </p>
       </div>
 
+      <!-- Two stages, because that is how the submission guide has always
+           described it: naming new lineages before publication, then the records
+           once the paper is accepted. Curation is not a third stage a submitter
+           takes; it happens inside both, which is where it is described. -->
       <div class="steps">
         <div class="step">
           <div class="num display">1</div>
           <h3>Before you publish</h3>
-          <p>Send your new lineage names and their sequences. We check them, usually within a
-            week, so the same names end up in your paper, in GenBank and in MalAvi.</p>
+          <p>Send your new lineage names and their sequences. They are checked, typically
+            within a week, and you are told of any changes — so the same names end up in your
+            paper, in GenBank and in MalAvi. Send the accession numbers once you have
+            deposited.</p>
         </div>
         <div class="step">
           <div class="num display">2</div>
           <h3>When it is accepted</h3>
           <p>Send the records: which lineage, in which host, where, and how many were tested.
-            Plus the paper and its supplementary files if you can.</p>
-        </div>
-        <div class="step">
-          <div class="num display">3</div>
-          <h3>We take it from there</h3>
-          <p>A curator checks everything and comes back to you with any questions. Your data
-            appear in the next release.</p>
+            Plus the paper and its supplementary files if you can. A curator adds them, resolves
+            any questions with you by email, and they appear in the next release.</p>
         </div>
       </div>
 
@@ -208,19 +227,19 @@
           <a href="assets/downloads/ImportMalavi_Template_2026-07.xlsx" download><span class="nm">Submission template</span><span class="ds">One workbook covers both stages. Fill the green columns.</span><span class="fm">XLSX</span></a>
           <a href="assets/downloads/Gupta_ImportMalavi_Example.xlsx" download><span class="nm">Worked example</span><span class="ds">A real filled submission from Gupta et al. 2019: 47 lineages, 28 hosts, 13 sites.</span><span class="fm">XLSX</span></a>
         </div>
-        <div class="btn-row" style="margin-top:16px">
-          <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdNyJ31gofIl_2qfFC1dwz-_ctneXnw60xc7ZX6k5Fi4g2cUA/viewform" target="_blank" rel="noopener">Upload the paper and supplementary files</a>
-        </div>
-        <p style="margin-top:12px;font-size:13.5px">
-          Both are encouraged, neither is required. The supplementary tables usually hold the
-          host × lineage × site matrix, so they help most. Files are used only to check the
-          records against the paper, are shared with the curators alone, and are never posted.
+        <p style="margin-top:14px;font-size:13.5px">
+          The paper and its supplementary files are welcome too, and go through the same form.
+          Neither is required. The supplementary tables usually hold the host × lineage × site
+          matrix, so they help most. Files are used only to check the records against the paper,
+          are shared with the curators alone, and are never posted.
         </p>
-      </div>
-
-      <div class="pull">
-        <p><strong>Nothing you send is added automatically.</strong> A curator reviews every
-          submission.</p>
+        <p style="margin-top:12px;font-size:13.5px">
+          Records you send go into the database — that is what submitting is for. If your study
+          is not published yet and you would rather we held the records until it is, say so in
+          the notes on the form and we will. Names and sequences sent before publication are
+          held for you either way: while a submission is in the queue its proposed names are
+          listed as claimed, so nobody else is given them.
+        </p>
       </div>
 
       <div>
@@ -293,7 +312,10 @@
         <h2 class="section-title display">Check a sequence</h2>
         <p>One sequence at a time. Paste it plain or with a Fasta header. This
           tells you whether it is already in MalAvi, which genus it looks like, and whether it
-          is long enough to be named as new.</p>
+          is long enough to be named as new. It also runs the quality checks a curator would:
+          how much of the barcode region you have, whether it reads through in frame, and
+          whether any base sits where no other lineage has one. If it does look new, it will
+          help you work out the name.</p>
         <div class="card" style="margin-top:16px">
           <div class="lookup-box">
             <label class="eyebrow" for="seq-check">Your sequence</label>
@@ -310,6 +332,29 @@
 
         <div class="pull" style="margin-top:16px">
           <p>A curator confirms every new lineage and its name.</p>
+        </div>
+      </div>
+
+      <!-- The same name lookup the sequence checker offers, on its own. Someone
+           who already knows their sequence is new should not have to paste it
+           again to find out which numbers are free. -->
+      <div id="namecheck">
+        <h2 class="section-title display">Check a name</h2>
+        <p>No sequence needed. Give the host species your new lineage came from and this shows
+          which numbers its acronym has already used — both in the release and in submissions
+          that are still in the queue.</p>
+        <div class="card" style="margin-top:16px">
+          <div class="lookup-box">
+            <label class="eyebrow" for="name-host">Host species</label>
+            <div class="btn-row">
+              <input id="name-host" type="text" spellcheck="false" autocomplete="off"
+                placeholder="Turdus migratorius">
+              <button class="btn" type="button" data-name-suggest="name-host"
+                data-out="name-out">Show me what is free</button>
+              <span style="font-size:12.5px;color:var(--ink-3)">Runs in your browser. Nothing is uploaded.</span>
+            </div>
+          </div>
+          <div class="naming-out" id="name-out"></div>
         </div>
       </div>
 
@@ -336,7 +381,7 @@
         <p class="eyebrow">Apps</p>
         <div class="files">
           <a href="https://811l41-vincenzo-ellis.shinyapps.io/MalAviBLAST/" target="_blank" rel="noopener"><span class="nm">MalAvi BLAST</span><span class="ds">Match a sequence against every lineage, with full alignment output.</span><span class="fm">App</span></a>
-          <a class="wip"><span class="nm">Lineage QC <span class="badge-wip">In development</span></span><span class="ds">Run the quality checks over your own set of new lineages before submitting. Not yet available.</span><span class="fm">App</span></a>
+          <a href="#" data-goto-el="checker"><span class="nm">Sequence checker</span><span class="ds">Is this sequence already a MalAvi lineage? Runs the quality checks too — barcode coverage, reading frame, bases seen at no other lineage — in your browser, one sequence at a time.</span><span class="fm">Page</span></a>
         </div>
       </div>
 
@@ -513,6 +558,6 @@
     <a href="mailto:vaellis@udel.edu,staffan.bensch@biol.lu.se?subject=MalAvi">Contact the curators</a>
   </div>
 </footer>
-<script type="module" src="assets/js/malavi.js?v=a70385d7"></script>
+<script type="module" src="assets/js/malavi.js?v=6380a6cf"></script>
 </body>
 </html>

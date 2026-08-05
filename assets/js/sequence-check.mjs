@@ -243,6 +243,49 @@ const EXACT_MATCH_CORROBORATION = K;
         that assertion was false.
    Only query-side seeding changed; the reference index is built as before. */
 
+/* ---- THE SITE PROFILE -------------------------------------------------------
+   Every reference is stored padded to exactly the 479 bp alignment window, so
+   column c of one sequence is homologous to column c of every other. That makes
+   a per-column tally of the bases MalAvi has ever seen possible, and the tally
+   is what lets the checker say something a plain nearest-neighbour comparison
+   cannot: "the base you have here has never been seen at this position in any
+   lineage."
+
+   Counts are weighted by how many LINEAGE NAMES carry a sequence, not by how
+   many distinct sequences do, because the question a submitter is asking is
+   about lineages.
+
+   It is built here, from the index itself, rather than shipped as its own data
+   file, so it can never describe a different release from the sequences beside
+   it. Cost is one pass over 5,359 x 479 characters -- far less than the k-mer
+   index built in the same function.
+
+   Columns with poor coverage are excluded from the novelty judgement. Column 1
+   is covered by only 2,337 of the 5,367 lineages, because both standard inner
+   forward primers end one base into the window (see the primer frame reference
+   in reference/cytb_primer_frame_reference/), and "never seen before" means
+   very little where most lineages have nothing recorded at all. The 50%
+   threshold is the same one malaviR's lineage_screen() uses, and in this
+   release it excludes column 1 and nothing else. */
+const MIN_SITE_COVERAGE = 0.5;
+
+const BASE_INDEX = { A: 0, C: 1, G: 2, T: 3 };
+
+/* ---- READING FRAME AND STOP CODONS -----------------------------------------
+   The MalAvi window is in frame: column 1 is a first codon position, so codons
+   are columns 1-3, 4-6, and so on. malaviR relies on the same convention
+   (R/internal.R, .qc_codon_position), and it holds -- of the 5,359 sequences in
+   the 2026-03-23 release only 18 carry a stop codon read this way.
+
+   The genetic code is NCBI table 4, mold/protozoan/coelenterate mitochondrial,
+   which is the right one for Plasmodium, Haemoproteus and Leucocytozoon. It
+   differs from the standard code in exactly the way that matters here: TGA
+   codes tryptophan rather than stop, so TAA and TAG are the only stops. Reading
+   these sequences under the vertebrate mitochondrial code (table 2) invents
+   stop codons that are not there; malaviR carries a regression test for that
+   same mistake. */
+const STOP_CODONS = new Set(["TAA", "TAG"]);
+
 export function buildIndex(payload) {
   const entries = payload.entries.map((e) => {
     // Gaps are alignment padding, not biology. Comparison happens on the
@@ -276,14 +319,55 @@ export function buildIndex(payload) {
     }
   });
 
+  /* Per-column base counts over the whole release. See THE SITE PROFILE. */
+  const windowLength = payload.window_length;
+  const siteCounts = new Int32Array(windowLength * 4); // A, C, G, T per column
+  const siteCoverage = new Int32Array(windowLength);   // lineages with a base there
+  for (const entry of entries) {
+    const weight = entry.names.length;
+    const gapped = entry.seq;
+    const columns = Math.min(gapped.length, windowLength);
+    for (let column = 0; column < columns; column++) {
+      // Gaps and ambiguity codes are not evidence that a base was observed, so
+      // they contribute to neither the counts nor the coverage.
+      const base = BASE_INDEX[gapped[column]];
+      if (base === undefined) continue;
+      siteCounts[column * 4 + base] += weight;
+      siteCoverage[column] += weight;
+    }
+  }
+
+  /* Every lineage name in the release, sorted. Used by suggestLineageName to
+     work out which numbers a host acronym has already used. */
+  const allNames = [...new Set(entries.flatMap((e) => e.names))].sort();
+
   return {
     entries,
     kmers,
-    windowLength: payload.window_length,
+    windowLength,
     minLength: payload.min_length,
     release: payload.release,
-    nLineages: payload.n_lineages
+    nLineages: payload.n_lineages,
+    siteCounts,
+    siteCoverage,
+    allNames
   };
+}
+
+/**
+ * How many lineages carry `base` at 1-based alignment column `column`?
+ *
+ * Returns -1 when the column is outside the window, or is too poorly covered
+ * across the release for its tally to mean anything (see MIN_SITE_COVERAGE).
+ * Callers treat -1 as "no opinion" rather than as zero, which is the whole
+ * point of separating it from a genuine count of nought.
+ */
+export function siteBaseCount(index, column, base) {
+  if (column < 1 || column > index.windowLength) return -1;
+  const slot = BASE_INDEX[base];
+  if (slot === undefined) return -1;
+  if (index.siteCoverage[column - 1] < MIN_SITE_COVERAGE * index.nLineages) return -1;
+  return index.siteCounts[(column - 1) * 4 + slot];
 }
 
 /**
@@ -671,6 +755,377 @@ export function findMatches(index, querySequence, { maxCandidates = 400 } = {}) 
   return { best, ties, names };
 }
 
+/* ---- PLACING THE QUERY IN THE BARCODE WINDOW --------------------------------
+   Everything below the identity question -- how much of the barcode region was
+   actually read, whether the sequence reads through in frame, whether a base is
+   one MalAvi has never seen at that position -- needs to know which alignment
+   COLUMN each base of the submitted sequence sits in. The match gives us that
+   for free: findMatches already worked out the offset at which the query lines
+   up with its closest reference, and every reference is padded to the window,
+   so the reference's own gap pattern converts an offset into columns.
+
+   Bases that fall outside columns 1..479 are the case the checker used to say
+   nothing about at all: someone who sequenced past the barcode region on either
+   side was told the length of everything they pasted and left to assume all of
+   it had been compared, when only the part inside the window ever is. */
+
+/**
+ * Work out the alignment column of every base of the submitted sequence.
+ *
+ * `query` is the cleaned, ungapped sequence as pasted (forward orientation);
+ * `best` is the winning candidate from findMatches. Returns the oriented
+ * sequence that was actually compared, the 1-based column of each of its
+ * positions (which may be below 1 or above the window length, meaning the base
+ * lies outside the barcode region), and a tally of how much fell where.
+ */
+export function placeInWindow(index, query, best) {
+  const oriented = best.orientation === "reverse" ? reverseComplement(query) : query;
+
+  /* Column of each ungapped position of the reference. A short lineage is
+     stored padded -- RBQ18 is 133 bp of sequence inside 479 columns -- so this
+     is not the identity mapping and cannot be assumed to be. */
+  const referenceColumns = [];
+  const gapped = best.entry.seq;
+  for (let column = 0; column < gapped.length; column++) {
+    if (gapped[column] !== "-") referenceColumns.push(column + 1);
+  }
+
+  const columns = new Array(oriented.length);
+  let inside = 0;
+  let before = 0;
+  let after = 0;
+  let firstColumn = 0;
+  let lastColumn = 0;
+
+  for (let i = 0; i < oriented.length; i++) {
+    // Where this base sits along the reference's own ungapped sequence.
+    const referencePosition = i + best.offset;
+    let column;
+    if (referencePosition >= 0 && referencePosition < referenceColumns.length) {
+      column = referenceColumns[referencePosition];
+    } else if (referencePosition < 0) {
+      /* The query starts before the reference does. Step back through whatever
+         padding the reference carries at its 5' end: those columns are still
+         inside the barcode region, and only once the padding runs out is the
+         base genuinely outside it. */
+      column = referenceColumns[0] + referencePosition;
+    } else {
+      column = referenceColumns[referenceColumns.length - 1] +
+        (referencePosition - referenceColumns.length + 1);
+    }
+    columns[i] = column;
+
+    if (column < 1) {
+      before++;
+    } else if (column > index.windowLength) {
+      after++;
+    } else {
+      inside++;
+      if (!firstColumn || column < firstColumn) firstColumn = column;
+      if (column > lastColumn) lastColumn = column;
+    }
+  }
+
+  return { oriented, columns, inside, before, after, firstColumn, lastColumn };
+}
+
+/**
+ * Report positions the way the submitter can act on them: as a 1-based index
+ * into the sequence they pasted, not into the reverse complement we may have
+ * compared, and not into a copy with the gap characters taken out.
+ *
+ * `gapMap[i]` is the position, in the cleaned sequence including gaps, of the
+ * i-th ungapped base.
+ */
+function submissionPosition(orientedIndex, orientedLength, reversed, gapMap) {
+  const ungappedIndex = reversed ? orientedLength - 1 - orientedIndex : orientedIndex;
+  return gapMap[ungappedIndex] + 1;
+}
+
+/** Positions of the non-gap characters of a cleaned sequence, in order. */
+function ungappedToCleaned(sequence) {
+  const map = [];
+  for (let i = 0; i < sequence.length; i++) if (sequence[i] !== "-") map.push(i);
+  return map;
+}
+
+/** "positions 231 and 402" / "positions 12, 231 and 402" -- no Oxford comma. */
+function joinList(items) {
+  if (items.length <= 1) return items.join("");
+  return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
+}
+
+/**
+ * How much of the barcode region the submission covers, and how much of it sits
+ * outside.
+ */
+function coverageCheck(index, placement) {
+  const { inside, before, after, firstColumn, lastColumn } = placement;
+  const outside = before + after;
+  const window = index.windowLength;
+
+  const span =
+    inside === window
+      ? `the whole ${window} bp barcode region`
+      : `${inside} bp of the ${window} bp barcode region (positions ` +
+        `${firstColumn}–${lastColumn})`;
+
+  if (outside === 0) {
+    return { state: "pass", label: "Coverage", text: `Covers ${span}.` };
+  }
+
+  /* Sequenced past the region. The comparison is still sound -- only the
+     overlap is ever scored -- but the submitter has no way of knowing that from
+     a length alone, and the flanking bases are neither checked nor named from. */
+  const where = [];
+  if (before) where.push(`${before} bp before it`);
+  if (after) where.push(`${after} bp after it`);
+  return {
+    state: "warn",
+    label: "Coverage",
+    text:
+      `Covers ${span}, plus ${joinList(where)}. Those ${outside} bp lie outside the ` +
+      "barcode region: they were not compared, and they play no part in whether this " +
+      "is a new lineage. Trim to the barcode region before depositing."
+  };
+}
+
+/**
+ * Read the submission in frame and report stop codons.
+ *
+ * Only codons that lie wholly inside the window and are wholly concrete are
+ * read: an ambiguity code could stand for a stop or for something else, and
+ * guessing either way would be inventing a finding.
+ */
+function frameCheck(placement, position) {
+  const { oriented, columns } = placement;
+
+  // Column -> index in the oriented sequence, so a codon can be assembled from
+  // its three columns rather than from three adjacent bases (which is only the
+  // same thing when nothing is missing).
+  const byColumn = new Map();
+  for (let i = 0; i < columns.length; i++) byColumn.set(columns[i], i);
+
+  let codonsRead = 0;
+  const stops = [];
+  for (const [column, index] of byColumn) {
+    if ((column - 1) % 3 !== 0) continue; // not a first codon position
+    const second = byColumn.get(column + 1);
+    const third = byColumn.get(column + 2);
+    if (second === undefined || third === undefined) continue;
+    const codon = oriented[index] + oriented[second] + oriented[third];
+    if (/[^ACGT]/.test(codon)) continue;
+    codonsRead++;
+    if (!STOP_CODONS.has(codon)) continue;
+    // Report the span in the submitter's own coordinates, low end first --
+    // a reverse-complemented read runs the other way.
+    const ends = [position(index), position(third)].sort((a, b) => a - b);
+    stops.push({ codon, column, from: ends[0], to: ends[1] });
+  }
+
+  if (codonsRead === 0) return null; // nothing readable in frame; say nothing
+
+  if (stops.length === 0) {
+    return {
+      state: "pass",
+      label: "Frame",
+      text: `Reads through all ${codonsRead} codons without a stop.`
+    };
+  }
+
+  stops.sort((a, b) => a.from - b.from);
+  const listed = stops
+    .slice(0, 4)
+    .map((s) => `${s.codon} at positions ${s.from}–${s.to}`);
+  const rest = stops.length - listed.length;
+
+  return {
+    state: "fail",
+    label: "Frame",
+    text:
+      `Stop codon${stops.length === 1 ? "" : "s"} in the reading frame: ` +
+      joinList(listed) + (rest > 0 ? `, and ${rest} more` : "") +
+      ". Cytochrome b should read through the whole barcode region, so this " +
+      "usually means a mis-called base, an insertion or deletion that has shifted " +
+      "the frame, or sequence pasted in from outside the region. " +
+      "(TAA and TAG are the only stops in these parasites; TGA codes tryptophan.)"
+  };
+}
+
+/**
+ * Compare each base against everything MalAvi has ever seen at that column.
+ *
+ * A base at a position where no lineage carries it is the single most useful
+ * thing this profile can say: 97% of the lineages in the release carry no such
+ * base at all when held out of their own reference, so it is rare enough to be
+ * worth a second look at the trace, and common enough in bad reads to catch
+ * real errors.
+ */
+function sitesCheck(index, placement, position) {
+  const { oriented, columns } = placement;
+  const unseen = [];
+  let scarce = 0;
+  let judged = 0;
+
+  for (let i = 0; i < oriented.length; i++) {
+    const base = oriented[i];
+    const count = siteBaseCount(index, columns[i], base);
+    if (count < 0) continue; // outside the window, ambiguous, or a thin column
+    judged++;
+    if (count === 0) unseen.push({ base, position: position(i), column: columns[i] });
+    else if (count <= 2) scarce++;
+  }
+
+  if (judged === 0) return null;
+
+  const scarceNote = scarce
+    ? ` ${scarce} other base${scarce === 1 ? " sits" : "s sit"} at a position where ` +
+      `${scarce === 1 ? "it is" : "they are"} carried by no more than two lineages.`
+    : "";
+
+  if (unseen.length === 0) {
+    return {
+      state: "pass",
+      label: "Sites",
+      text: `Every base is one MalAvi has seen at that position before.${scarceNote}`
+    };
+  }
+
+  unseen.sort((a, b) => a.position - b.position);
+  const listed = unseen.slice(0, 6).map((u) => `${u.base} at position ${u.position}`);
+  const rest = unseen.length - listed.length;
+
+  return {
+    state: "warn",
+    label: "Sites",
+    text:
+      `${joinList(listed)}${rest > 0 ? `, and ${rest} more,` : ""} ` +
+      `${unseen.length === 1 && rest === 0 ? "is a base" : "are bases"} found at ` +
+      "that position in no other MalAvi lineage. That can be perfectly real, but it is " +
+      "also what a mis-called base looks like — please check the trace at " +
+      `${unseen.length === 1 ? "that position" : "those positions"} before naming it.` +
+      scarceNote
+  };
+}
+
+/* ---- NAMING A NEW LINEAGE ---------------------------------------------------
+   From the submission guide, in Staffan Bensch's words: a new lineage gets "a
+   5-6 letter acronym based on the scientific name of the first encountered host
+   species followed by a two-digit number. The name must be unique for the
+   database."
+
+   The acronym is genus letters plus epithet letters, and BOTH widths are in
+   real use -- Turdus migratorius has 24 lineages named TUMIG and 17 named
+   TURMIG. So the checker does not pick one. It works out both candidates, says
+   which numbers each has already used, and leaves the choice where it belongs:
+   with the curator, who is confirming the name anyway. */
+
+/** Two-digit zero padding, widening past 99 rather than truncating. */
+function padNumber(n) {
+  return String(n).padStart(2, "0");
+}
+
+/**
+ * Which lineage names already use this acronym, and what the next number is.
+ *
+ * `claims` is the list of names claimed by submissions that have been received
+ * but are not yet in a release, each with the date it was claimed. A claimed
+ * number is not free: the submission guide's reason for sending names before
+ * publication is that they are held for you, and priority runs by the date the
+ * submission arrived. So the next proposal steps over the claims as well as over
+ * the release, and the claims are reported rather than silently skipped -- being
+ * told "TUMIG25 is spoken for, you would be TUMIG26" is the useful answer.
+ */
+function acronymUsage(index, acronym, claims) {
+  const pattern = new RegExp("^" + acronym + "(\\d+)$");
+
+  const numbers = [];
+  for (const name of index.allNames) {
+    const hit = pattern.exec(name);
+    if (hit) numbers.push(Number(hit[1]));
+  }
+
+  const claimed = [];
+  for (const claim of claims) {
+    const hit = pattern.exec(claim.name);
+    if (hit) claimed.push({ name: claim.name, claimed: claim.claimed, number: Number(hit[1]) });
+  }
+  claimed.sort((a, b) => a.number - b.number);
+
+  const highestInRelease = numbers.length ? Math.max(...numbers) : 0;
+  const highestClaimed = claimed.length ? claimed[claimed.length - 1].number : 0;
+  const next = Math.max(highestInRelease, highestClaimed) + 1;
+
+  return {
+    acronym,
+    taken: numbers.length,
+    highest: numbers.length ? acronym + padNumber(highestInRelease) : null,
+    claims: claimed.map((c) => ({ name: c.name, claimed: c.claimed })),
+    proposal: acronym + padNumber(next)
+  };
+}
+
+/**
+ * Turn a host species name into the lineage names that are still free.
+ *
+ * Pure and offline, like everything else here: it reads the lineage names in
+ * the loaded release, plus whatever names pending submissions have claimed, and
+ * nothing else. It proposes; it does not assign.
+ *
+ * `reservations` is the reserved_names.json payload, or its `names` array, or
+ * nothing at all. Nothing at all is a supported answer, not a failure: the feed
+ * is optional, and a page that could not load it still gives the right answer
+ * about the release -- it just cannot speak for submissions in the queue.
+ */
+export function suggestLineageName(index, hostName, reservations) {
+  const claims = Array.isArray(reservations)
+    ? reservations
+    : (reservations && reservations.names) || [];
+
+  /* Keep only things that look like words. This drops "sp.", "cf.", authorities
+     and any punctuation, so "Turdus sp." is correctly treated as a genus with no
+     epithet rather than as a binomial. */
+  const words = String(hostName == null ? "" : hostName)
+    .split(/[^A-Za-z]+/)
+    .filter((word) => word.length >= 3);
+
+  if (words.length < 2) {
+    return {
+      ok: false,
+      message:
+        "Give the host's scientific name — genus and species, as in " +
+        "Turdus migratorius. The acronym is built from both."
+    };
+  }
+
+  const genus = words[0].toUpperCase();
+  const epithet = words[1].toUpperCase();
+
+  /* Both widths that MalAvi uses, longer first: 3,336 of the 5,367 names in this
+     release use a six-letter acronym and 1,343 a five-letter one. A duplicate is
+     dropped, which is what happens when the genus is only two letters long. */
+  const acronyms = [...new Set([
+    genus.slice(0, 3) + epithet.slice(0, 3),
+    genus.slice(0, 2) + epithet.slice(0, 3)
+  ])];
+
+  const options = acronyms.map((acronym) => acronymUsage(index, acronym, claims));
+  // An acronym already in use for this host is the one to follow; show it first.
+  options.sort((a, b) => b.taken - a.taken);
+
+  return {
+    ok: true,
+    host: words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase() +
+      " " + epithet.toLowerCase(),
+    options,
+    inUse: options.some((o) => o.taken > 0),
+    // Whether any pending claim bore on this host at all, so the page can say
+    // when it has checked the queue and found nothing rather than staying silent.
+    claimsChecked: claims.length > 0,
+    claimed: options.some((o) => o.claims.length > 0)
+  };
+}
+
 /**
  * The full check: content validation plus identity, as a plain data structure.
  * Rendering lives in the page; this returns only findings.
@@ -821,6 +1276,15 @@ export function checkSequence(index, raw) {
         : "Forward, as expected."
   });
 
+  /* With a match in hand the submission can be placed in the alignment window,
+     which is what the remaining checks all read from. */
+  const placement = placeInWindow(index, sequence.replace(/-/g, ""), best);
+  const gapMap = ungappedToCleaned(sequence);
+  const position = (i) =>
+    submissionPosition(i, placement.oriented.length, best.orientation === "reverse", gapMap);
+
+  checks.push(coverageCheck(index, placement));
+
   if (best.differences === 0) {
     /* An exact match means the sequence is certainly already in MalAvi, which
        is the safe and important half of the answer. WHICH lineage it is can
@@ -877,6 +1341,22 @@ export function checkSequence(index, raw) {
 
   const identity = (100 * (1 - best.differences / best.compared)).toFixed(1);
 
+  /* Reading frame and per-position novelty, the two checks malaviR's
+     lineage_qc() runs on a candidate lineage. They are worth running here for
+     the same reason they exist there: a sequence that differs from everything
+     named is either a new lineage or a bad read, and these are what tell those
+     two apart.
+
+     They are run only when the sequence DOES differ from its closest match. An
+     exact match to a named lineage is already in the database with whatever
+     properties it has -- 18 lineages in this release carry a stop codon -- and
+     reporting the database's own quirks back to someone who has simply
+     re-sequenced a known lineage would be noise, not a finding. */
+  const sequenceQuality = [
+    frameCheck(placement, position),
+    sitesCheck(index, placement, position)
+  ].filter(Boolean);
+
   if (content.unambiguous < minLength) {
     checks.push({
       state: "fail",
@@ -886,6 +1366,7 @@ export function checkSequence(index, raw) {
         `${best.differences === 1 ? "" : "s"} over ${best.compared} bp, but the sequence ` +
         "is too short to name a new lineage from."
     });
+    for (const quality of sequenceQuality) checks.push(quality);
     return {
       verdict: "stop",
       title: "Too short to name",
@@ -913,14 +1394,21 @@ export function checkSequence(index, raw) {
       `Closest is ${nameList} at ${best.differences} difference` +
       `${best.differences === 1 ? "" : "s"} over ${best.compared} bp.`
   });
+  for (const quality of sequenceQuality) checks.push(quality);
   checks.push({
     state: "warn",
     label: "Naming",
-    text: "Tell us the host species and we will give you the next free number for its acronym."
+    text:
+      "Needs a name. Enter the host species below and we will show you which numbers " +
+      "its acronym has already used."
   });
 
   return {
     verdict: "new",
+    /* Tells the page to offer the naming box. The suggestion itself is made by
+       suggestLineageName once the submitter has told us the host, which is the
+       one thing a sequence cannot tell us. */
+    naming: true,
     title: "Looks like a new lineage",
     message:
       `Closest match is ${nameList} — ${best.differences} difference` +

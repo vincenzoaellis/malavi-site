@@ -32,13 +32,18 @@ const optional = (url) =>
    are fetched when a visitor actually opens that table, so nobody downloads the
    4 MB hosts table to read the home page. Both are written by
    export/build_tables_json.R. */
-const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.all([
+/* RESERVED is optional for a reason: it only exists once submissions have been
+   fetched, and a page that cannot load it must still answer correctly about the
+   release rather than fail. It carries a name and a date per claim, nothing
+   more -- see curation/build_name_reservations.py. */
+const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS, RESERVED] = await Promise.all([
   feed("assets/data/site_stats.json"),
   feed("assets/data/tables_index.json"),
   feed("assets/data/world_map.json"),
   feed("assets/data/reports.json"),
   optional("assets/data/queue.json"),
-  optional("assets/data/contributors.json")
+  optional("assets/data/contributors.json"),
+  optional("assets/data/reserved_names.json")
 ]);
 (function () {
   "use strict";
@@ -87,8 +92,16 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
     var el = e.target.closest("[data-goto-el]");
     if (el) {
       e.preventDefault();
-      document.getElementById(el.dataset.gotoEl)
-        .scrollIntoView({ behavior: "smooth", block: "start" });
+      var target = document.getElementById(el.dataset.gotoEl);
+      if (!target) return;
+      /* The target can sit in a view that is not on screen: the toolkit links to
+         the checker, which lives on the submit page. Switch to its view first,
+         or there is nothing on screen to scroll to. */
+      var holder = target.closest(".view");
+      if (holder && !holder.classList.contains("active")) {
+        show(holder.id.replace(/^view-/, ""));
+      }
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   });
 
@@ -120,6 +133,10 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
 
   function n(value) { return Number(value).toLocaleString(); }
 
+  /* An older payload has no taxonomy_source; fall back to empty strings so the
+     spans render blank rather than "undefined". */
+  var TAXONOMY_SOURCE = STATS.taxonomy_source || { clootl_year: "", malaviR_version: "" };
+
   /* Fill every element that binds to a single figure. */
   function bindStats(mapped, unplaced) {
     var values = {
@@ -132,7 +149,11 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
       /* Studies reported only from countries the basemap cannot place. They are
          in the tables but on no panel, so the page says so rather than letting
          them go missing quietly. */
-      offmap:    n(STATS.map_studies - STATS.map_studies_shown)
+      offmap:    n(STATS.map_studies - STATS.map_studies_shown),
+      /* Where the derived host taxonomy key came from. Both move independently
+         of the MalAvi release, so the tables page states them. */
+      clootl_year:     TAXONOMY_SOURCE.clootl_year,
+      malaviR_version: TAXONOMY_SOURCE.malaviR_version
     };
     Array.prototype.forEach.call(document.querySelectorAll("[data-stat]"), function (el) {
       var v = values[el.dataset.stat];
@@ -315,7 +336,7 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
     var spec = TABLE_INDEX.tables[meta.id] || { columns: [] };
     return {
       id: meta.id, title: meta.title, description: meta.description,
-      totalRows: meta.rows, columns: spec.columns, rows: null
+      group: meta.group, totalRows: meta.rows, columns: spec.columns, rows: null
     };
   }).filter(function (t) { return t.columns.length; });
 
@@ -382,7 +403,7 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
     return "assets/downloads/tables/" + tableId + "_" + RELEASE + "." + ext;
   }
 
-  document.getElementById("tindex").innerHTML = TABLES.map(function (t) {
+  function tindexRow(t) {
     return '<div class="tindex-row">' +
       '<div class="tindex-main"><a data-open="' + t.id + '">' + escapeHtml(t.title) + "</a>" +
         "<p>" + escapeHtml(t.description) + "</p></div>" +
@@ -392,7 +413,24 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
         '<a class="mini" href="' + tableDownloadHref(t.id, "csv") + '" download>CSV</a>' +
         '<a class="mini" href="' + tableDownloadHref(t.id, "xlsx") + '" download>Excel</a>' +
       "</div></div>";
-  }).join("");
+  }
+
+  /* Two blocks: the release's own tables, then anything built on top of MalAvi.
+     Which block a table lands in comes from its `group` in the payload, not from
+     a list kept here -- a table added upstream lands in the right place without
+     this file being touched. Anything without a group is treated as release
+     data, which is what every table was before the distinction existed. */
+  function isDerived(t) { return t.group === "derived"; }
+  document.getElementById("tindex").innerHTML =
+    TABLES.filter(function (t) { return !isDerived(t); }).map(tindexRow).join("");
+
+  var derived = TABLES.filter(isDerived);
+  var derivedBlock = document.getElementById("tindexDerivedBlock");
+  if (!derived.length) {
+    derivedBlock.style.display = "none";
+  } else {
+    document.getElementById("tindexDerived").innerHTML = derived.map(tindexRow).join("");
+  }
 
   var alignmentLink = document.getElementById("dlAlignment");
   if (alignmentLink) {
@@ -652,16 +690,45 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
 
   var MARKS = { known: "\u2713", "new": "\u25c6", stop: "\u2715", unknown: "\u25c6" };
 
+  /* The stylesheet paints verdicts in three washes -- ok, warn, stop -- and the
+     four verdicts the checker returns map onto them. Writing the verdict name
+     straight into the class left v-known, v-new and v-unknown unstyled, so
+     three of the four answers came out unpainted. */
+  var VERDICT_CLASS = { known: "ok", "new": "warn", stop: "stop", unknown: "warn" };
+
+  /* The naming box. Only shown for a probable new lineage, because it is the
+     only case where a name is needed at all. The host species is the one thing
+     the sequence cannot tell us, so it has to be asked for. */
+  function namingPanel(outId) {
+    return '' +
+      '<div class="naming">' +
+        '<label class="eyebrow" for="' + outId + '-host">Host species this came from</label>' +
+        '<div class="btn-row">' +
+          '<input id="' + outId + '-host" type="text" spellcheck="false" autocomplete="off" ' +
+            'placeholder="Turdus migratorius">' +
+          '<button class="btn ghost" type="button" data-name-suggest="' + outId + '-host" ' +
+            'data-out="' + outId + '-name">Check the name</button>' +
+        '</div>' +
+        '<p class="fine">A new lineage takes \u201ca 5-6 letter acronym based on the scientific name ' +
+          'of the first encountered host species followed by a two-digit number\u201d. Both the ' +
+          'five- and six-letter forms are in use, so this shows you the numbers each has ' +
+          'already taken rather than picking for you. A curator confirms the final name.</p>' +
+        '<div class="naming-out" id="' + outId + '-name"></div>' +
+      '</div>';
+  }
+
   function renderResult(outId, result) {
     var box = document.getElementById(outId);
     var checks = (result.checks || []).map(function (c) {
       return '<li><span class="tag t-' + c.state + '">' + c.label + "</span><span>" +
              c.text + "</span></li>";
     });
-    var html = '<div class="verdict v-' + result.verdict + '"><span class="mark">' +
+    var html = '<div class="verdict v-' + (VERDICT_CLASS[result.verdict] || "warn") +
+      '"><span class="mark">' +
       (MARKS[result.verdict] || "") + '</span><div><h4>' + result.title + "</h4><p>" +
       result.message + "</p></div></div>";
     if (checks.length) html += '<ul class="checklist">' + checks.join("") + "</ul>";
+    if (result.naming) html += namingPanel(outId);
     box.innerHTML = html;
     box.classList.add("show");
   }
@@ -669,6 +736,15 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
   function renderMessage(outId, verdict, title, message) {
     renderResult(outId, { verdict: verdict, title: title, message: message, checks: [] });
   }
+
+  /* The host box is a single-line field, so Enter should submit it. */
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var field = e.target.closest("input[id$='-host']");
+    if (!field) return;
+    var button = document.querySelector('[data-name-suggest="' + field.id + '"]');
+    if (button) { e.preventDefault(); button.click(); }
+  });
 
   document.addEventListener("click", function (e) {
     var runner = e.target.closest("[data-check]");
@@ -683,6 +759,63 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS] = await Promise.al
         renderMessage(out, "stop", "Could not run the checks",
           "The lineage index did not load (" + err.message + "). Please reload the page, " +
           "or send us the sequence and we will check it for you.");
+      });
+      return;
+    }
+
+    /* Naming: the submitter types the host species, we read the lineage names
+       already in the release and report which numbers that host's acronym has
+       used. Nothing is assigned and nothing is sent anywhere. */
+    var namer = e.target.closest("[data-name-suggest]");
+    if (namer) {
+      var host = document.getElementById(namer.dataset.nameSuggest).value;
+      var nameBox = document.getElementById(namer.dataset.out);
+      nameBox.innerHTML = "<p class=\"fine\">Checking the names in use…</p>";
+      loadChecker().then(function (checker) {
+        var suggestion = checker.module.suggestLineageName(checker.index, host, RESERVED);
+        if (!suggestion.ok) {
+          nameBox.innerHTML = '<p class="fine">' + suggestion.message + "</p>";
+          return;
+        }
+        var rows = suggestion.options.map(function (option) {
+          /* A name held by a submission in the queue is not free, so say who is
+             ahead by date rather than just skipping the number. */
+          var held = option.claims.map(function (c) {
+            return escapeHtml(c.name) + " (claimed " + escapeHtml(c.claimed) + ")";
+          }).join(", ");
+          return '<li><span class="tag t-' + (option.taken ? "pass" : "warn") + '">' +
+            option.acronym + '</span><span><b>' + option.proposal + '</b> — ' +
+            (option.taken
+              ? option.taken + (option.taken === 1
+                  ? " lineage already uses this acronym, "
+                  : " lineages already use this acronym, ") +
+                "up to " + option.highest + "."
+              : "no lineage uses this acronym yet.") +
+            (held
+              ? " Already claimed by a submission ahead of you: " + held +
+                ". Priority goes by the date a submission arrives."
+              : "") +
+            "</span></li>";
+        }).join("");
+        nameBox.innerHTML =
+          '<p class="fine">For <i>' + suggestion.host + '</i>' +
+          (suggestion.inUse
+            ? ", following the acronym MalAvi already uses for this host:"
+            : ". Neither acronym is in use yet, so both are open — note that a lineage " +
+              "from this host may still exist under one of the older, less regular names:") +
+          '</p><ul class="checklist">' + rows + "</ul>" +
+          '<p class="fine">Checked against release ' + escapeHtml(STATS.release) +
+          (RESERVED
+            ? " and against names claimed by submissions received up to " +
+              escapeHtml((RESERVED.generated || "").slice(0, 10)) +
+              ". A submission that arrived after that is not shown here."
+            : ". Submissions still in the queue could not be checked.") +
+          " Send the sequence, the host and the name you prefer with the " +
+          'submission form and a curator will confirm it. Please wait for that before ' +
+          'depositing in GenBank — the same name has to end up in all three places.</p>';
+      }).catch(function (err) {
+        nameBox.innerHTML = '<p class="fine">Could not read the lineage names (' +
+          err.message + ").</p>";
       });
       return;
     }
