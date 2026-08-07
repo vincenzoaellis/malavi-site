@@ -58,6 +58,21 @@
 .guide .note p{margin:0; color:var(--ink-2)}
 .guide .note strong{color:var(--ink)}
 .guide footer{padding:48px 0 0; color:var(--ink-3); font-size:14px}
+/* Download rows. Copied from the site's .files rules rather than inherited, because
+   the standalone artifact copy has no access to assets/css/malavi.css -- without
+   these the three spans of a file row run together as unstyled text there while
+   looking correct on the site, which is the kind of difference nobody sees until
+   somebody opens the artifact. Kept scoped under .guide like everything else here,
+   so on the site page the site's own rules still win for the rest of the page. */
+.guide .files{display:grid; gap:1px; background:var(--rule-soft);
+  border:1px solid var(--rule); border-radius:var(--radius); overflow:hidden}
+.guide .files a{display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+  background:var(--surface); padding:13px 17px; text-decoration:none; color:inherit}
+.guide .files a:hover{background:var(--surface-2)}
+.guide .files .nm{font-weight:600; font-size:14.5px; min-width:180px}
+.guide .files .ds{font-size:13px; color:var(--ink-3); flex:1}
+.guide .files .fm{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ink-3); border:1px solid var(--rule); border-radius:4px; padding:2px 7px}
 
 /* The site page keeps the guide off the masthead's toes. */
 .guide{padding-top:8px}
