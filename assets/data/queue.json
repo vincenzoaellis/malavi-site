@@ -1,18 +1,5 @@
 {
-  "generated": "2026-08-05T20:22:33Z",
-  "n_submissions": 1,
-  "items": [
-    {
-      "id": "20260727T233146_Vincenzo_Ellis",
-      "submitted": "2026-07-27",
-      "status": "Under review",
-      "pill": "p-check",
-      "detail": "2 new lineages · 2 records · post-publication",
-      "n_lineages": 2,
-      "n_records": 2,
-      "n_files": 4,
-      "n_warnings": 2,
-      "n_errors": 0
-    }
-  ]
+  "generated": "2026-08-07T00:50:51Z",
+  "n_submissions": 0,
+  "items": []
 }

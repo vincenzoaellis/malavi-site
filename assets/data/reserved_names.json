@@ -1,15 +1,6 @@
 {
   "release": "2026-03-23",
-  "generated": "2026-08-05T20:22:48Z",
-  "n_names": 2,
-  "names": [
-    {
-      "name": "NECMON01",
-      "claimed": "2026-07-27"
-    },
-    {
-      "name": "NECMON02",
-      "claimed": "2026-07-27"
-    }
-  ]
+  "generated": "2026-08-07T00:50:51Z",
+  "n_names": 0,
+  "names": []
 }

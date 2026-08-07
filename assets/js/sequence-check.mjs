@@ -1076,8 +1076,14 @@ function acronymUsage(index, acronym, claims) {
  * nothing at all. Nothing at all is a supported answer, not a failure: the feed
  * is optional, and a page that could not load it still gives the right answer
  * about the release -- it just cannot speak for submissions in the queue.
+ *
+ * `taxonomy` is the bird_names.json payload, and is optional in the same way.
+ * When supplied, the result carries a `taxonomy` verdict on the host name (see
+ * checkHostName). It never changes what is proposed: an unrecognized name still
+ * gets its acronym, because taxonomy moves and a dated checklist is not the
+ * authority on what a submitter found.
  */
-export function suggestLineageName(index, hostName, reservations) {
+export function suggestLineageName(index, hostName, reservations, taxonomy) {
   const claims = Array.isArray(reservations)
     ? reservations
     : (reservations && reservations.names) || [];
@@ -1122,8 +1128,75 @@ export function suggestLineageName(index, hostName, reservations) {
     // Whether any pending claim bore on this host at all, so the page can say
     // when it has checked the queue and found nothing rather than staying silent.
     claimsChecked: claims.length > 0,
-    claimed: options.some((o) => o.claims.length > 0)
+    claimed: options.some((o) => o.claims.length > 0),
+    // What the avian checklist makes of the name, when one was supplied.
+    taxonomy: checkHostName(taxonomy, words[0], words[1])
   };
+}
+
+/**
+ * Is this a real bird, according to the eBird/Clements checklist?
+ *
+ * Returns a verdict, never a veto. The checker's job here is to catch a typo or
+ * an invented name before it becomes a lineage name in a paper and in GenBank --
+ * not to decide what exists. Taxonomy moves, this checklist is a dated snapshot,
+ * and a submitter naming a bird it has not caught up with is right more often
+ * than the file is. So an unrecognized name is reported and the acronym is
+ * offered anyway.
+ *
+ * Deliberately checked against the WHOLE checklist rather than MalAvi's own host
+ * list. The interesting case for a new lineage is a parasite sequenced from a
+ * host nobody has screened before: 11,167 species are in the checklist and only
+ * about 2,300 have ever appeared in MalAvi, so validating against MalAvi's hosts
+ * would reject the great majority of legitimate new host species.
+ *
+ * `checklist` is the bird_names.json payload, or nothing. Nothing is a supported
+ * answer -- the page still works, it just cannot speak about the name.
+ *
+ * The returned `status` is one of:
+ *   "unchecked"  no checklist was loaded
+ *   "accepted"   a current eBird species
+ *   "synonym"    a valid older name; `current` gives the name it resolves to
+ *   "genus-only" the genus is real but the epithet is not one of its species
+ *   "unknown"    neither the genus nor the name is in the checklist
+ */
+export function checkHostName(checklist, rawGenus, rawEpithet) {
+  if (!checklist || !checklist.accepted) return { status: "unchecked" };
+
+  /* The checklist stores names as they are written: capitalised genus, lower
+     case epithet. Submitters type all sorts of things, so compare on a
+     normalised form rather than demanding they get the casing right. */
+  const genus = rawGenus.charAt(0).toUpperCase() + rawGenus.slice(1).toLowerCase();
+  const epithet = rawEpithet.toLowerCase();
+  const binomial = genus + " " + epithet;
+
+  const species = checklist.accepted[genus];
+  if (species && species.indexOf(epithet) !== -1) {
+    return {
+      status: "accepted",
+      name: binomial,
+      family: (checklist.families && checklist.families[genus]) || null
+    };
+  }
+
+  const synonyms = checklist.synonyms && checklist.synonyms[genus];
+  const current = synonyms && synonyms[epithet];
+  if (current) {
+    /* An older name. Both forms are reported and neither is chosen: the acronym
+       should follow the name the submitter will publish, and which that is
+       depends on what their paper says, not on what this file prefers. */
+    return { status: "synonym", name: binomial, current };
+  }
+
+  if (species) {
+    return {
+      status: "genus-only",
+      name: binomial,
+      genus,
+      family: (checklist.families && checklist.families[genus]) || null
+    };
+  }
+  return { status: "unknown", name: binomial };
 }
 
 /**

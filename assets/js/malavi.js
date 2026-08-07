@@ -36,14 +36,20 @@ const optional = (url) =>
    fetched, and a page that cannot load it must still answer correctly about the
    release rather than fail. It carries a name and a date per claim, nothing
    more -- see curation/build_name_reservations.py. */
-const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS, RESERVED] = await Promise.all([
+/* BIRDS is the eBird/Clements checklist (export/build_bird_names.R). Optional in
+   the same way: without it the name checker still proposes acronyms, it simply
+   cannot say whether the host name is a real bird. It is checked against the WHOLE
+   checklist, not MalAvi's own hosts -- a parasite sequenced from a bird nobody has
+   screened before is exactly the case a new lineage arises from. */
+const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS, RESERVED, BIRDS] = await Promise.all([
   feed("assets/data/site_stats.json"),
   feed("assets/data/tables_index.json"),
   feed("assets/data/world_map.json"),
   feed("assets/data/reports.json"),
   optional("assets/data/queue.json"),
   optional("assets/data/contributors.json"),
-  optional("assets/data/reserved_names.json")
+  optional("assets/data/reserved_names.json"),
+  optional("assets/data/bird_names.json")
 ]);
 (function () {
   "use strict";
@@ -83,8 +89,20 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS, RESERVED] = await 
   }
   document.getElementById("nav").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-view]");
-    if (b) show(b.dataset.view);
+    if (b) { location.hash = b.dataset.view; show(b.dataset.view); }
   });
+
+  /* Deep links. Without this the only way into a view is to click its tab, so
+     nothing outside the page -- another page, an email, a citation -- can point
+     at anything but the home view. The hash is validated against the views that
+     actually exist rather than trusted, because it is user-supplied and is used
+     to build an element id. */
+  function showFromHash() {
+    var name = (location.hash || "").replace(/^#/, "");
+    if (name && document.getElementById("view-" + name)) show(name);
+  }
+  window.addEventListener("hashchange", showFromHash);
+  showFromHash();
   document.getElementById("brandHome").addEventListener("click", function () { show("home"); });
   document.addEventListener("click", function (e) {
     var g = e.target.closest("[data-goto]");
@@ -772,7 +790,7 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS, RESERVED] = await 
       var nameBox = document.getElementById(namer.dataset.out);
       nameBox.innerHTML = "<p class=\"fine\">Checking the names in use…</p>";
       loadChecker().then(function (checker) {
-        var suggestion = checker.module.suggestLineageName(checker.index, host, RESERVED);
+        var suggestion = checker.module.suggestLineageName(checker.index, host, RESERVED, BIRDS);
         if (!suggestion.ok) {
           nameBox.innerHTML = '<p class="fine">' + suggestion.message + "</p>";
           return;
@@ -797,14 +815,44 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS, RESERVED] = await 
               : "") +
             "</span></li>";
         }).join("");
-        nameBox.innerHTML =
+        /* What the avian checklist makes of the name. Reported, never enforced:
+           taxonomy moves, the checklist is a dated snapshot, and a submitter who
+           has found a bird it has not caught up with is right more often than the
+           file is. So every branch below still shows the acronyms. */
+        var tax = suggestion.taxonomy || { status: "unchecked" };
+        var taxNote = "";
+        if (tax.status === "synonym") {
+          taxNote = '<p class="fine">The current name for <i>' + escapeHtml(tax.name) +
+            '</i> is <i>' + escapeHtml(tax.current) + '</i>. Both are offered below — ' +
+            'use whichever your paper will use, since the lineage name should match it.</p>';
+        } else if (tax.status === "genus-only") {
+          taxNote = '<p class="fine"><b>' + escapeHtml(tax.genus) + '</b> is a bird genus (' +
+            escapeHtml(tax.family || "family unknown") + '), but <i>' + escapeHtml(tax.name) +
+            '</i> is not one of its species in the eBird/Clements checklist. Worth ' +
+            'checking the spelling. If the name is right and the checklist is behind, ' +
+            'carry on — say so on the form.</p>';
+        } else if (tax.status === "unknown") {
+          taxNote = '<p class="fine"><i>' + escapeHtml(tax.name) + '</i> is not in the ' +
+            'eBird/Clements checklist, and neither is the genus. Please check the ' +
+            'spelling: a lineage acronym is built from the host name and ends up in ' +
+            'your paper and in GenBank, so a typo here is expensive to undo. If the ' +
+            'name is right, carry on and tell us on the form.</p>';
+        }
+
+        nameBox.innerHTML = taxNote +
           '<p class="fine">For <i>' + suggestion.host + '</i>' +
+          (tax.status === "accepted" && tax.family
+            ? ' (' + escapeHtml(tax.family) + ')'
+            : "") +
           (suggestion.inUse
             ? ", following the acronym MalAvi already uses for this host:"
             : ". Neither acronym is in use yet, so both are open — note that a lineage " +
               "from this host may still exist under one of the older, less regular names:") +
           '</p><ul class="checklist">' + rows + "</ul>" +
           '<p class="fine">Checked against release ' + escapeHtml(STATS.release) +
+          (BIRDS ? ' and the eBird/Clements checklist' +
+            (BIRDS.clootl_year ? ' (' + escapeHtml(String(BIRDS.clootl_year)) + ')' : '')
+            : '') +
           (RESERVED
             ? " and against names claimed by submissions received up to " +
               escapeHtml((RESERVED.generated || "").slice(0, 10)) +
