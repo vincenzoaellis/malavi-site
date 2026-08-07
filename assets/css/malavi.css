@@ -122,11 +122,20 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .wordmark .lo { color:var(--accent); }
 .brand-sub { font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
   color:var(--ink-3); margin-top:3px; }
-nav.primary { display:flex; gap:2px; flex-wrap:wrap; }
-nav.primary button { font:inherit; font-size:14px; background:none; border:0; cursor:pointer;
-  color:var(--ink-2); padding:7px 11px; border-radius:7px; }
-nav.primary button:hover { background:var(--surface-2); color:var(--ink); }
-nav.primary button[aria-current="page"] { background:var(--accent); color:var(--accent-ink); }
+nav.primary { display:flex; gap:2px; flex-wrap:wrap; align-items:center; }
+/* Buttons switch views inside the single-page app; anchors leave for a real page
+   (how-it-works.html, curating.html). They must be indistinguishable in the bar --
+   styled separately they read as stray hyperlinks crowded against the tabs. The
+   anchors stay anchors rather than becoming buttons so they can still be opened in
+   a new tab, copied, and followed with JavaScript off. */
+nav.primary button,
+nav.primary a { font:inherit; font-size:14px; background:none; border:0; cursor:pointer;
+  color:var(--ink-2); padding:7px 11px; border-radius:7px;
+  text-decoration:none; line-height:normal; white-space:nowrap; display:inline-block; }
+nav.primary button:hover,
+nav.primary a:hover { background:var(--surface-2); color:var(--ink); }
+nav.primary button[aria-current="page"],
+nav.primary a[aria-current="page"] { background:var(--accent); color:var(--accent-ink); }
 .theme-toggle { font:inherit; font-size:13px; cursor:pointer; background:var(--surface);
   color:var(--ink-2); border:1px solid var(--rule); border-radius:7px; padding:6px 10px; line-height:1; }
 
@@ -420,7 +429,7 @@ footer.site a { color:var(--ink-2); }
 
 @media (max-width:640px) {
   .wordmark { font-size:28px; }
-  nav.primary button { padding:6px 8px; font-size:13px; }
+  nav.primary button, nav.primary a { padding:6px 8px; font-size:13px; }
   .board-row { grid-template-columns:26px 1fr auto; }
   .rank-row { grid-template-columns:1fr; }
   .rank-row .rlab { text-align:left; }
