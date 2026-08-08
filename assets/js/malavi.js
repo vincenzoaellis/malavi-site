@@ -844,7 +844,7 @@ const CHECKLIST_BEHIND_NOTE =
           taxNote = '<p class="fine"><b><i>' + escapeHtml(tax.name) + '</i> is not in the ' +
             'eBird/Clements checklist, and neither is the genus.</b> Please check the ' +
             'spelling: a lineage acronym is built from the host name and ends up in ' +
-            'your paper and in GenBank, so a typo here is expensive to undo. ' +
+            'your paper and in GenBank, so a typo here is hard to undo. ' +
             CHECKLIST_BEHIND_NOTE + '</p>';
         }
 
