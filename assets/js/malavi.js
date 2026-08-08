@@ -51,6 +51,16 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS, RESERVED, BIRDS] =
   optional("assets/data/reserved_names.json"),
   optional("assets/data/bird_names.json")
 ]);
+
+/* The one sentence every "the checklist does not know this bird" answer ends on.
+   Kept in a single place because the name checker gives the same advice whether
+   the genus was recognized or not, and the two must not drift apart: the
+   checklist is a dated snapshot, so a submitter whose host name is right is told
+   to keep the name and flag it on the form rather than change it to match. */
+const CHECKLIST_BEHIND_NOTE =
+  "If the host species name is correct (perhaps an older or newer name), please " +
+  "indicate this on the submission form so that we can try to match the species " +
+  "to the current eBird/Clements checklist.";
 (function () {
   "use strict";
 
@@ -827,16 +837,15 @@ const [STATS, TABLE_INDEX, MAP, REPORTS, QUEUE, CONTRIBUTORS, RESERVED, BIRDS] =
             'use whichever your paper will use, since the lineage name should match it.</p>';
         } else if (tax.status === "genus-only") {
           taxNote = '<p class="fine"><b>' + escapeHtml(tax.genus) + '</b> is a bird genus (' +
-            escapeHtml(tax.family || "family unknown") + '), but <i>' + escapeHtml(tax.name) +
-            '</i> is not one of its species in the eBird/Clements checklist. Worth ' +
-            'checking the spelling. If the name is right and the checklist is behind, ' +
-            'carry on — say so on the form.</p>';
+            escapeHtml(tax.family || "family unknown") + '), but <b><i>' + escapeHtml(tax.name) +
+            '</i> is not one of its species in the eBird/Clements checklist.</b> Worth ' +
+            'checking the spelling. ' + CHECKLIST_BEHIND_NOTE + '</p>';
         } else if (tax.status === "unknown") {
-          taxNote = '<p class="fine"><i>' + escapeHtml(tax.name) + '</i> is not in the ' +
-            'eBird/Clements checklist, and neither is the genus. Please check the ' +
+          taxNote = '<p class="fine"><b><i>' + escapeHtml(tax.name) + '</i> is not in the ' +
+            'eBird/Clements checklist, and neither is the genus.</b> Please check the ' +
             'spelling: a lineage acronym is built from the host name and ends up in ' +
-            'your paper and in GenBank, so a typo here is expensive to undo. If the ' +
-            'name is right, carry on and tell us on the form.</p>';
+            'your paper and in GenBank, so a typo here is expensive to undo. ' +
+            CHECKLIST_BEHIND_NOTE + '</p>';
         }
 
         nameBox.innerHTML = taxNote +

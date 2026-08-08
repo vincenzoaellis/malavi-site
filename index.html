@@ -8,7 +8,7 @@
   haemosporidians (Plasmodium, Haemoproteus, Leucocytozoon), organized around lineages of the
   mitochondrial cytochrome b gene.">
 <link rel="icon" href="assets/img/favicon.ico">
-<link rel="stylesheet" href="assets/css/malavi.css?v=8d88b083">
+<link rel="stylesheet" href="assets/css/malavi.css?v=a3777527">
 </head>
 <body>
 <header class="masthead">
@@ -186,8 +186,7 @@
 
       <div>
         <h1 class="page display">Submit your data</h1>
-        <p class="lead">MalAvi is built from data contributed by researchers. There are two
-          things to send, and they can be sent months apart.</p>
+        <p class="lead">MalAvi is built from data contributed by researchers.</p>
         <div class="btn-row" style="margin-top:20px">
           <a class="btn big" href="https://docs.google.com/forms/d/e/1FAIpQLSerNc5iuTRXGEpdT-qjtw5u-7AMtCyMXeRGaf9-jdC894bZ1g/viewform" target="_blank" rel="noopener">Open the submission form</a>
           <a class="btn big ghost" href="#" data-goto-el="checker">Check a sequence first</a>
@@ -231,16 +230,11 @@
         </div>
         <p style="margin-top:14px;font-size:13.5px">
           The paper and its supplementary files are welcome too, and go through the same form.
-          Neither is required. The supplementary tables usually hold the host × lineage × site
-          matrix, so they help most. Files are used only to check the records against the paper,
-          are shared with the curators alone, and are never posted.
         </p>
         <p style="margin-top:12px;font-size:13.5px">
-          If your study is not published yet and you would rather we held the records until
-          it is, say so in the notes on the form and we will. Names and sequences sent before
-          publication are
-          held for you either way: while a submission is in the queue its proposed names are
-          listed as claimed, so nobody else is given them.
+          If your study is not yet published, let us know and we won't put your sequences into
+          the next data release. But we will reserve your sequence names so they don't end up
+          attached to a different sequence later.
         </p>
       </div>
 
@@ -273,7 +267,7 @@
                 combination.</li>
               <li><strong>Sites</strong>: latitude and longitude as degrees and decimal minutes,
                 e.g. <span class="mono">11°28.20000', 076°07.80000'</span>. Decimal degrees are
-                fine too; we convert and show you what we read.</li>
+                fine too.</li>
               <li><strong>Alt_Lineage_names</strong>: if your paper calls an existing MalAvi
                 lineage by a different name. Please fill this in; it avoids substantial work
                 reconciling names during curation.</li>
@@ -294,7 +288,10 @@
                 <span class="mono">Gupta et al. 2019</span>.</dd>
               <dt>Prevalence</dt><dd>Number found and number tested, where your study reports
                 them. Found must not exceed tested.</dd>
-              <dt>Minimum length</dt><dd>470 bp of unambiguous sequence within the 479 bp window.</dd>
+              <dt>Minimum length</dt><dd>470 bp of unambiguous sequence within the 479 bp window.
+                If your sequences are shorter than 470 bp, please
+                <a href="mailto:malaviadmin@gmail.com?subject=MalAvi%20submission">email the
+                curators</a> before submitting.</dd>
             </dl>
           </div>
         </details>
@@ -469,7 +466,7 @@
       </div>
 
       <div>
-        <h2 class="section-title display" style="font-size:26px">Editorial board</h2>
+        <h2 class="section-title display" style="font-size:26px">Board of Curators</h2>
         <p>MalAvi is curated by the people below. Assistant curators review incoming data
           submissions; the role is an editorial appointment and is listed here so it can be
           cited on a CV.</p>
@@ -488,7 +485,7 @@
             </div>
             <div class="person">
               <span class="nm">Vincenzo A. Ellis</span>
-              <span class="role">Curator</span>
+              <span class="role">Curator and maintainer</span>
               <span class="aff">University of Delaware</span>
               <span class="yrs">2026–</span>
             </div>
@@ -561,6 +558,6 @@
     <a href="mailto:malaviadmin@gmail.com?subject=MalAvi">Contact the curators</a>
   </div>
 </footer>
-<script type="module" src="assets/js/malavi.js?v=358b26d2"></script>
+<script type="module" src="assets/js/malavi.js?v=8c08e130"></script>
 </body>
 </html>
